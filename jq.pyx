@@ -4,6 +4,7 @@ cdef extern from "jv.h":
     int jv_is_valid(jv)
     char* jv_string_value(jv)
     jv jv_dump_string(jv, int flags)
+    void jv_free(jv)
 
 
 cdef extern from "jq.h":
@@ -71,4 +72,4 @@ cdef process(jq_state *jq, jv value):
         else:
             dumped = jv_dump_string(result, dumpopts)
             output.append(jv_string_value(dumped))
-            # TODO: free dumped
+            jv_free(dumped)
