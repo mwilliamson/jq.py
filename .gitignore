@@ -1,2 +1,6 @@
 *.pyc
 /README
+/_virtualenv
+/build
+/jq.c
+/jq.so
