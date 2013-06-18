@@ -11,7 +11,6 @@ def read(fname):
 
 jq_extension = Extension(
     "jq",
-    #sources=["_jq.c", "jq.pyx"],
     sources=["jq.pyx"],
     include_dirs=["../jq/"],
     libraries=["jq"],
