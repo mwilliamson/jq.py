@@ -18,7 +18,7 @@ clean:
 	rm -f MANIFEST
 	rm -rf dist
 	
-bootstrap: _virtualenv setup
+bootstrap: _virtualenv jq.c setup
 	_virtualenv/bin/pip install -e .
 ifneq ($(wildcard test-requirements.txt),) 
 	_virtualenv/bin/pip install -r test-requirements.txt
@@ -29,3 +29,7 @@ setup: README
 
 _virtualenv: 
 	virtualenv _virtualenv
+
+jq.c: _virtualenv
+	_virtualenv/bin/pip install cython
+	_virtualenv/bin/cython jq.pyx

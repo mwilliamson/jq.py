@@ -3,7 +3,6 @@
 import os
 from setuptools import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
 
 
 def read(fname):
@@ -11,7 +10,7 @@ def read(fname):
 
 jq_extension = Extension(
     "jq",
-    sources=["jq.pyx"],
+    sources=["jq.c"],
     include_dirs=["../jq/"],
     libraries=["jq"],
     library_dirs=["../jq/"],
@@ -24,7 +23,6 @@ setup(
     long_description=read("README"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/jq.py',
-    cmdclass={"build_ext": build_ext},
     ext_modules = [jq_extension]
 )
 
