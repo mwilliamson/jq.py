@@ -1,3 +1,5 @@
+import json
+
 cdef extern from "jv.h":
     ctypedef struct jv:
         pass
@@ -53,6 +55,10 @@ def string_to_string(char* program, char* input):
     
     jq_teardown(&jq)
     return "".join(results)
+
+
+def string_to_json(char* program, char* input):
+    return json.loads(string_to_string(program, input))
 
 
 cdef process(jq_state *jq, jv value):

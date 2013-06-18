@@ -25,3 +25,11 @@ def output_elements_are_separated_by_newlines():
         "1\n2\n3",
         jq.string_to_string(".[]", "[1,2,3]")
     )
+
+
+@istest
+def string_to_json_parses_json_output():
+    assert_equal(
+        [1, 2, 3],
+        jq.string_to_json("[.[]]", "[1,2,3]")
+    )
