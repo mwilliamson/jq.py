@@ -64,7 +64,6 @@ cdef class _Program(object):
     cdef object _string_to_strings(self, char* input):
         cdef jv_parser parser
         jv_parser_init(&parser)
-        # TODO: is len a suitable replacement for strlen (unicode)?
         jv_parser_set_buf(&parser, input, len(input), 0)
         cdef jv value
         results = []
