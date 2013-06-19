@@ -97,6 +97,7 @@ cdef process(jq_state *jq, jv value, output):
     while True:
         result = jq_next(jq)
         if not jv_is_valid(result):
+            jv_free(result)
             return output
         else:
             dumped = jv_dump_string(result, dumpopts)
