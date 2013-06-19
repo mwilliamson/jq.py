@@ -52,15 +52,15 @@ cdef class _Program(object):
     def __dealloc__(self):
         jq_teardown(&self._jq)
     
-    def transform_string(self, input):
+    def transform_string(self, char* input):
         result_strings = self._string_to_strings(input)
         return _Result(result_strings)
         
-    def transform_json(self, input):
+    def transform_json(self, object input):
         return self.transform_string(json.dumps(input))
         
 
-    def _string_to_strings(self, char* input):
+    cdef object _string_to_strings(self, char* input):
         cdef jv_parser parser
         jv_parser_init(&parser)
         # TODO: is len a suitable replacement for strlen (unicode)?
@@ -79,7 +79,7 @@ cdef class _Program(object):
         return results
 
 
-    cdef _process(self, jv value, output):
+    cdef void _process(self, jv value, object output):
         cdef int jq_flags = 0
         
         jq_start(self._jq, value, jq_flags);
