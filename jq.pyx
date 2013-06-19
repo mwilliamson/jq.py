@@ -32,9 +32,10 @@ cdef extern from "jv_parse.h":
 
 
 def jq(char* program):
-    cdef jq_state *jq
-    # TODO: error if !jq
-    jq = jq_init()
+    cdef jq_state *jq = jq_init()
+    if not jq:
+        raise Exception("jq_init failed")
+    
     # TODO: jq_compile prints error to stderr
     cdef int compiled = jq_compile(jq, program)
     
