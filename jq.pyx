@@ -41,6 +41,9 @@ class _Program(object):
         
     def transform_string(self, input):
         return _Result(_string_to_strings(self._program, input))
+        
+    def transform_json(self, input):
+        return _Result(_string_to_strings(self._program, json.dumps(input)))
 
 
 class _Result(object):
