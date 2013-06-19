@@ -3,7 +3,7 @@
 Warning: this project is not production-ready.
 There are almost certainly a number of memory leaks and the API is not stable.
 
-This project contains Python bindings for (jq)[http://stedolan.github.io/jq/].
+This project contains Python bindings for [jq](http://stedolan.github.io/jq/).
 
 ## Examples
 
