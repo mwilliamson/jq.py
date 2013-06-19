@@ -53,7 +53,7 @@ jq_extension = Extension(
 setup(
     name='jq',
     version='0.1.0',
-    description='jq is a lightweight and flexible command-line JSON processor.',
+    description='jq is a lightweight and flexible JSON processor.',
     long_description=read("README"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/jq.py',
