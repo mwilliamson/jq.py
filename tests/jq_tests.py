@@ -1,4 +1,4 @@
-from nose.tools import istest, assert_equal
+from nose.tools import istest, assert_equal, assert_raises
 
 from jq import jq
 
@@ -57,3 +57,9 @@ def output_elements_are_separated_by_newlines_when_there_are_multiple_inputs():
         "2\n3\n4",
         str(jq(".+1").transform_string("1\n2\n3"))
     )
+
+
+@istest
+def value_error_is_raised_if_program_is_invalid():
+    # TODO: should raise in just jq()
+    assert_raises(ValueError, lambda: jq("!").transform_string("[1, 2, 3]"))

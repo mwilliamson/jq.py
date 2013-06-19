@@ -67,6 +67,9 @@ def _string_to_strings(char* program, char* input):
     # TODO: error if !compiled
     cdef int compiled = jq_compile(jq, program)
     
+    if not compiled:
+        raise ValueError("program was not valid")
+    
     cdef jv_parser parser
     jv_parser_init(&parser)
     # TODO: is len a suitable replacement for strlen (unicode)?
