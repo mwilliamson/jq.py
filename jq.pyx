@@ -1,5 +1,6 @@
 import json
 
+
 cdef extern from "jv.h":
     ctypedef struct jv:
         pass
@@ -28,10 +29,35 @@ cdef extern from "jv_parse.h":
     void jv_parser_free(jv_parser*)
     void jv_parser_set_buf(jv_parser*, const char*, int, int)
     jv jv_parser_next(jv_parser*)
-    
 
 
-def string_to_string(char* program, char* input):
+def jq(char* program):
+    return _Program(program)
+
+
+class _Program(object):
+    def __init__(self, program):
+        self._program = program
+        
+    def transform_string(self, input):
+        return _Result(_string_to_strings(self._program, input))
+
+
+class _Result(object):
+    def __init__(self, strings):
+        self._strings = strings
+        
+    def __str__(self):
+        return "\n".join(self._strings)
+        
+    def json(self):
+        return json.loads(str(self))
+        
+    def json_all(self):
+        return map(json.loads, self._strings)
+
+
+def _string_to_strings(char* program, char* input):
     cdef jq_state *jq
     # TODO: error if !jq
     jq = jq_init()
@@ -47,21 +73,17 @@ def string_to_string(char* program, char* input):
     while True:
         value = jv_parser_next(&parser)
         if jv_is_valid(value):
-            results.append(process(jq, value))
+            process(jq, value, results)
         else:
             break
             
     jv_parser_free(&parser)
     
     jq_teardown(&jq)
-    return "".join(results)
+    return results
 
 
-def string_to_json(char* program, char* input):
-    return json.loads(string_to_string(program, input))
-
-
-cdef process(jq_state *jq, jv value):
+cdef process(jq_state *jq, jv value, output):
     cdef int jq_flags = 0
     
     jq_start(jq, value, jq_flags);
@@ -69,12 +91,10 @@ cdef process(jq_state *jq, jv value):
     cdef int dumpopts = 0
     cdef jv dumped
     
-    output = []
-    
     while True:
         result = jq_next(jq)
         if not jv_is_valid(result):
-            return "\n".join(output)
+            return output
         else:
             dumped = jv_dump_string(result, dumpopts)
             output.append(jv_string_value(dumped))
