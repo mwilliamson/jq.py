@@ -64,7 +64,7 @@ def _string_to_strings(char* program, char* input):
     cdef jq_state *jq
     # TODO: error if !jq
     jq = jq_init()
-    # TODO: error if !compiled
+    # TODO: jq_compile prints error to stderr
     cdef int compiled = jq_compile(jq, program)
     
     if not compiled:
