@@ -57,7 +57,8 @@ setup(
     long_description=read("README"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/jq.py',
+    license='BSD 2-Clause',
     ext_modules = [jq_extension],
-    cmdclass={"build_ext": jq_build_ext}
+    cmdclass={"build_ext": jq_build_ext},
 )
 
