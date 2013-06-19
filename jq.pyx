@@ -32,18 +32,71 @@ cdef extern from "jv_parse.h":
 
 
 def jq(char* program):
-    return _Program(program)
+    cdef jq_state *jq
+    # TODO: error if !jq
+    jq = jq_init()
+    # TODO: jq_compile prints error to stderr
+    cdef int compiled = jq_compile(jq, program)
+    
+    if not compiled:
+        raise ValueError("program was not valid")
+    
+    cdef _Program wrapped_program = _Program.__new__(_Program)
+    wrapped_program._jq = jq
+    return wrapped_program
 
 
-class _Program(object):
-    def __init__(self, program):
-        self._program = program
-        
+cdef class _Program(object):
+    cdef jq_state* _jq
+
+    def __dealloc__(self):
+        jq_teardown(&self._jq)
+    
     def transform_string(self, input):
-        return _Result(_string_to_strings(self._program, input))
+        result_strings = self._string_to_strings(input)
+        return _Result(result_strings)
         
     def transform_json(self, input):
-        return _Result(_string_to_strings(self._program, json.dumps(input)))
+        return self.transform_string(json.dumps(input))
+        
+
+    def _string_to_strings(self, char* input):
+        cdef jv_parser parser
+        jv_parser_init(&parser)
+        # TODO: is len a suitable replacement for strlen (unicode)?
+        jv_parser_set_buf(&parser, input, len(input), 0)
+        cdef jv value
+        results = []
+        while True:
+            value = jv_parser_next(&parser)
+            if jv_is_valid(value):
+                self._process(value, results)
+            else:
+                break
+                
+        jv_parser_free(&parser)
+        
+        return results
+
+
+    cdef _process(self, jv value, output):
+        cdef int jq_flags = 0
+        
+        jq_start(self._jq, value, jq_flags);
+        cdef jv result
+        cdef int dumpopts = 0
+        cdef jv dumped
+        
+        while True:
+            result = jq_next(self._jq)
+            if not jv_is_valid(result):
+                jv_free(result)
+                return
+            else:
+                dumped = jv_dump_string(result, dumpopts)
+                output.append(jv_string_value(dumped))
+                jv_free(dumped)
+
 
 
 class _Result(object):
@@ -58,51 +111,3 @@ class _Result(object):
         
     def json_all(self):
         return map(json.loads, self._strings)
-
-
-def _string_to_strings(char* program, char* input):
-    cdef jq_state *jq
-    # TODO: error if !jq
-    jq = jq_init()
-    # TODO: jq_compile prints error to stderr
-    cdef int compiled = jq_compile(jq, program)
-    
-    if not compiled:
-        raise ValueError("program was not valid")
-    
-    cdef jv_parser parser
-    jv_parser_init(&parser)
-    # TODO: is len a suitable replacement for strlen (unicode)?
-    jv_parser_set_buf(&parser, input, len(input), 0)
-    cdef jv value
-    results = []
-    while True:
-        value = jv_parser_next(&parser)
-        if jv_is_valid(value):
-            process(jq, value, results)
-        else:
-            break
-            
-    jv_parser_free(&parser)
-    
-    jq_teardown(&jq)
-    return results
-
-
-cdef process(jq_state *jq, jv value, output):
-    cdef int jq_flags = 0
-    
-    jq_start(jq, value, jq_flags);
-    cdef jv result
-    cdef int dumpopts = 0
-    cdef jv dumped
-    
-    while True:
-        result = jq_next(jq)
-        if not jv_is_valid(result):
-            jv_free(result)
-            return output
-        else:
-            dumped = jv_dump_string(result, dumpopts)
-            output.append(jv_string_value(dumped))
-            jv_free(dumped)

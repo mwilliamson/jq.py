@@ -62,4 +62,4 @@ def output_elements_are_separated_by_newlines_when_there_are_multiple_inputs():
 @istest
 def value_error_is_raised_if_program_is_invalid():
     # TODO: should raise in just jq()
-    assert_raises(ValueError, lambda: jq("!").transform_string("[1, 2, 3]"))
+    assert_raises(ValueError, lambda: jq("!"))
