@@ -53,12 +53,10 @@ cdef class _Program(object):
     def __dealloc__(self):
         jq_teardown(&self._jq)
     
-    def transform_string(self, char* input):
-        result_strings = self._string_to_strings(input)
+    def transform(self, char* input, raw=False):
+        raw_input = input if raw else json.dumps(input)
+        result_strings = self._string_to_strings(raw_input)
         return _Result(result_strings)
-        
-    def transform_json(self, object input):
-        return self.transform_string(json.dumps(input))
         
 
     cdef object _string_to_strings(self, char* input):
