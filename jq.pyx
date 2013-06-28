@@ -8,6 +8,14 @@ cdef extern from "jv.h":
     char* jv_string_value(jv)
     jv jv_dump_string(jv, int flags)
     void jv_free(jv)
+    
+    cdef struct jv_parser:
+        pass
+    
+    jv_parser* jv_parser_new()
+    void jv_parser_free(jv_parser*)
+    void jv_parser_set_buf(jv_parser*, const char*, int, int)
+    jv jv_parser_next(jv_parser*)
 
 
 cdef extern from "jq.h":
@@ -20,16 +28,6 @@ cdef extern from "jq.h":
     void jq_start(jq_state *, jv value, int flags)
     jv jq_next(jq_state *)
     
-    
-cdef extern from "jv_parse.h":
-    cdef struct jv_parser:
-        pass
-    
-    void jv_parser_init(jv_parser*)
-    void jv_parser_free(jv_parser*)
-    void jv_parser_set_buf(jv_parser*, const char*, int, int)
-    jv jv_parser_next(jv_parser*)
-
 
 def jq(char* program):
     cdef jq_state *jq = jq_init()
@@ -60,19 +58,18 @@ cdef class _Program(object):
         
 
     cdef object _string_to_strings(self, char* input):
-        cdef jv_parser parser
-        jv_parser_init(&parser)
-        jv_parser_set_buf(&parser, input, len(input), 0)
+        cdef jv_parser* parser = jv_parser_new()
+        jv_parser_set_buf(parser, input, len(input), 0)
         cdef jv value
         results = []
         while True:
-            value = jv_parser_next(&parser)
+            value = jv_parser_next(parser)
             if jv_is_valid(value):
                 self._process(value, results)
             else:
                 break
                 
-        jv_parser_free(&parser)
+        jv_parser_free(parser)
         
         return results
 

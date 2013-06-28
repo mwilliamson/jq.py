@@ -28,11 +28,11 @@ class jq_build_ext(build_ext):
         else:    
             subprocess.check_call([
                 "git", "clone",
-                "https://github.com/nicowilliams/jq.git",
+                "https://github.com/stedolan/jq.git",
                 jq_lib_dir
             ])
         
-        # Tested with commit e8643787cf
+        # Tested with commit 37cfc912c1
         command(["git", "checkout", "libjq"])
         command(["mkdir", "-p", "m4"])
         command(["autoreconf", "-i"])
@@ -47,8 +47,9 @@ jq_extension = Extension(
     "jq",
     sources=["jq.c"],
     include_dirs=[jq_lib_dir],
-    libraries=["jq"],
-    library_dirs=[jq_lib_dir],
+    #libraries=["jq"],
+    extra_objects=[os.path.join(jq_lib_dir, ".libs/libjq.a")],
+    #library_dirs=[os.path.join(jq_lib_dir, ".libs")],
 )
 
 setup(
