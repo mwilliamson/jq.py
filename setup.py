@@ -56,7 +56,7 @@ setup(
     name='jq',
     version='0.1.0',
     description='jq is a lightweight and flexible JSON processor.',
-    long_description=read("README"),
+    long_description=read("README.md"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/jq.py',
     license='BSD 2-Clause',
