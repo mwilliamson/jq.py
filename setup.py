@@ -11,8 +11,12 @@ def path_in_dir(relative_path):
     return os.path.join(os.path.dirname(__file__), relative_path)
 
 
-def read(fname):
-    return open(path_in_dir(fname)).read()
+def read_or_empty_string(fname):
+    path = path_in_dir(fname)
+    if os.path.exists(path):
+        return open(path).read()
+    else:
+        return ""
 
 
 jq_lib_dir = path_in_dir("_jq-lib")
@@ -56,7 +60,7 @@ setup(
     name='jq',
     version='0.1.0',
     description='jq is a lightweight and flexible JSON processor.',
-    long_description=read("README"),
+    long_description=read_or_empty_string("README"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/jq.py',
     license='BSD 2-Clause',
