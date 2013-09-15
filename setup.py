@@ -28,16 +28,16 @@ class jq_build_ext(build_ext):
             subprocess.check_call(args, cwd=path_in_dir(jq_lib_dir))
             
         if os.path.exists(jq_lib_dir):
-            command(["git", "fetch"])
+            command(["git", "checkout", "master"])
+            command(["git", "pull"])
         else:    
             subprocess.check_call([
                 "git", "clone",
                 "https://github.com/stedolan/jq.git",
                 jq_lib_dir
             ])
+            command(["git", "checkout", "master"])
         
-        # Tested with commit 37cfc912c1
-        command(["git", "checkout", "libjq"])
         command(["mkdir", "-p", "m4"])
         command(["autoreconf", "-i"])
         command(["./configure", "CFLAGS=-fPIC"])
