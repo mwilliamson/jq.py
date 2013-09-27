@@ -51,9 +51,9 @@ cdef class _Program(object):
     def __dealloc__(self):
         jq_teardown(&self._jq)
     
-    def transform(self, input, raw=False):
-        raw_input = input if raw else json.dumps(input)
-        result_strings = self._string_to_strings(raw_input)
+    def transform(self, input, raw_input=False):
+        string_input = input if raw_input else json.dumps(input)
+        result_strings = self._string_to_strings(string_input)
         return _Result(result_strings)
         
 
