@@ -44,7 +44,7 @@ def string_to_json_parses_json_output():
 
 
 @istest
-def string_to_json_parses_json_output():
+def string_to_json_all_parses_json_output():
     assert_equal(
         [2, 3, 4],
         jq(".[]+1").transform([1, 2, 3]).json_all()
