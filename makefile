@@ -1,6 +1,6 @@
 .PHONY: test upload clean bootstrap setup
 
-test:
+test: bootstrap
 	sh -c '. _virtualenv/bin/activate; nosetests -m'\''^$$'\'' `find tests -name '\''*.py'\''`'
 	
 upload: setup
