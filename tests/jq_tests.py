@@ -4,18 +4,18 @@ from jq import jq
 
 
 @istest
-def dot_operator_does_nothing_to_string_input():
+def output_of_dot_operator_is_input():
     assert_equal(
         "42",
-        str(jq(".").transform("42", raw_input=True))
+        jq(".").transform("42").json()
     )
 
 
 @istest
-def dot_operator_does_nothing_to_json_input():
+def input_string_is_parsed_to_json_if_raw_input_is_true():
     assert_equal(
-        '"42"',
-        str(jq(".").transform("42"))
+        42,
+        jq(".").transform("42", raw_input=True).json()
     )
 
 
