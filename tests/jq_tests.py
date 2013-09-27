@@ -7,7 +7,15 @@ from jq import jq
 def output_of_dot_operator_is_input():
     assert_equal(
         "42",
-        jq(".").transform("42").json()
+        jq(".").transform("42")
+    )
+
+
+@istest
+def can_add_one_to_each_element_of_an_array():
+    assert_equal(
+        [2, 3, 4],
+        jq("[.[]+1]").transform([1, 2, 3])
     )
 
 
@@ -15,47 +23,47 @@ def output_of_dot_operator_is_input():
 def input_string_is_parsed_to_json_if_raw_input_is_true():
     assert_equal(
         42,
-        jq(".").transform("42", raw_input=True).json()
+        jq(".").transform("42", raw_input=True)
     )
 
 
 @istest
-def can_add_one_to_each_element_of_an_array():
+def output_is_serialised_to_json_string_if_raw_output_is_true():
     assert_equal(
-        "[2,3,4]",
-        str(jq("[.[]+1]").transform([1, 2, 3]))
+        '"42"',
+        jq(".").transform("42", raw_output=True)
     )
 
 
 @istest
-def output_elements_are_separated_by_newlines():
+def elements_in_raw_output_are_separated_by_newlines():
     assert_equal(
         "1\n2\n3",
-        str(jq(".[]").transform([1, 2, 3]))
+        jq(".[]").transform([1, 2, 3], raw_output=True)
     )
 
 
 @istest
-def string_to_json_parses_json_output():
+def first_output_element_is_returned_if_multiple_output_is_false_but_there_are_multiple_output_elements():
+    assert_equal(
+        2,
+        jq(".[]+1").transform([1, 2, 3])
+    )
+
+
+@istest
+def multiple_output_elements_are_returned_if_multiple_output_is_true():
     assert_equal(
         [2, 3, 4],
-        jq("[.[]+1]").transform([1, 2, 3]).json()
+        jq(".[]+1").transform([1, 2, 3], multiple_output=True)
     )
 
 
 @istest
-def string_to_json_all_parses_json_output():
+def multiple_inputs_in_raw_input_are_separated_by_newlines():
     assert_equal(
         [2, 3, 4],
-        jq(".[]+1").transform([1, 2, 3]).json_all()
-    )
-
-
-@istest
-def output_elements_are_separated_by_newlines_when_there_are_multiple_inputs():
-    assert_equal(
-        "2\n3\n4",
-        str(jq(".+1").transform("1\n2\n3", raw_input=True))
+        jq(".+1").transform("1\n2\n3", raw_input=True, multiple_output=True)
     )
 
 

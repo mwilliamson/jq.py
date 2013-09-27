@@ -51,10 +51,15 @@ cdef class _Program(object):
     def __dealloc__(self):
         jq_teardown(&self._jq)
     
-    def transform(self, input, raw_input=False):
+    def transform(self, input, raw_input=False, raw_output=False, multiple_output=False):
         string_input = input if raw_input else json.dumps(input)
         result_strings = self._string_to_strings(string_input)
-        return _Result(result_strings)
+        if raw_output:
+            return "\n".join(result_strings)
+        elif multiple_output:
+            return map(json.loads, result_strings)
+        else:
+            return json.loads(result_strings[0])
         
 
     cdef object _string_to_strings(self, char* input):
@@ -91,18 +96,3 @@ cdef class _Program(object):
                 dumped = jv_dump_string(result, dumpopts)
                 output.append(jv_string_value(dumped))
                 jv_free(dumped)
-
-
-
-class _Result(object):
-    def __init__(self, strings):
-        self._strings = strings
-        
-    def __str__(self):
-        return "\n".join(self._strings)
-        
-    def json(self):
-        return json.loads(str(self))
-        
-    def json_all(self):
-        return map(json.loads, self._strings)
