@@ -4,3 +4,4 @@
 /build
 /jq.c
 /jq.so
+/.tox
