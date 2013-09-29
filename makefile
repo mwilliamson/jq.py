@@ -15,7 +15,7 @@ register: setup
 	python setup.py register
 
 README:
-	pandoc --from=markdown --to=rst README.md > README
+	pandoc --from=markdown --to=rst README.md > README || cp README.md README
 
 clean:
 	rm -f README
