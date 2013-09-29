@@ -4,4 +4,6 @@ python:
 install:
   - "make bootstrap"
 script: tox
+notifications:
+  email: false
 
