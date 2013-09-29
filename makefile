@@ -1,4 +1,4 @@
-.PHONY: test upload clean bootstrap setup
+.PHONY: test upload clean bootstrap setup assert-converted-readme
 
 test:
 	_virtualenv/bin/nosetests tests
@@ -7,7 +7,7 @@ test-all: setup
 	_virtualenv/bin/tox
 	make clean
 	
-upload: setup
+upload: setup assert-converted-readme
 	python setup.py sdist upload
 	make clean
 	
@@ -16,6 +16,9 @@ register: setup
 
 README:
 	pandoc --from=markdown --to=rst README.md > README || cp README.md README
+
+assert-converted-readme:
+	test "`cat README`" != "`cat README.md`"
 
 clean:
 	rm -f README
