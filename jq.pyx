@@ -57,13 +57,13 @@ cdef class _Program(object):
         string_input = input if raw_input else json.dumps(input)
         bytes_input = string_input.encode("utf8")
         result_bytes = self._string_to_strings(bytes_input)
-        result_strings = result_bytes
+        result_strings = map(lambda s: s.decode("utf8"), result_bytes)
         if raw_output:
             return "\n".join(result_strings)
         elif multiple_output:
-            return map(json.loads, result_strings)
+            return [json.loads(s) for s in result_strings]
         else:
-            return json.loads(result_strings[0])
+            return json.loads(next(iter(result_strings)))
         
 
     cdef object _string_to_strings(self, char* input):
