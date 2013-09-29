@@ -29,13 +29,15 @@ cdef extern from "jq.h":
     jv jq_next(jq_state *)
     
 
-def jq(char* program):
+def jq(object program):
+    cdef object program_bytes_obj = program.encode("utf8")
+    cdef char* program_bytes = program_bytes_obj
     cdef jq_state *jq = jq_init()
     if not jq:
         raise Exception("jq_init failed")
     
     # TODO: jq_compile prints error to stderr
-    cdef int compiled = jq_compile(jq, program)
+    cdef int compiled = jq_compile(jq, program_bytes)
     
     if not compiled:
         raise ValueError("program was not valid")
@@ -53,7 +55,9 @@ cdef class _Program(object):
     
     def transform(self, input, raw_input=False, raw_output=False, multiple_output=False):
         string_input = input if raw_input else json.dumps(input)
-        result_strings = self._string_to_strings(string_input)
+        bytes_input = string_input.encode("utf8")
+        result_bytes = self._string_to_strings(bytes_input)
+        result_strings = result_bytes
         if raw_output:
             return "\n".join(result_strings)
         elif multiple_output:
