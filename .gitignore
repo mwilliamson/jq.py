@@ -5,3 +5,4 @@
 /jq.c
 /jq.so
 /.tox
+/*.egg-info
