@@ -1,11 +1,7 @@
 language: python
 python:
-  - "2.6"
   - "2.7"
-  - "3.3"
 install:
-  - "touch README"
-  - "pip install . --use-mirrors"
-  - "pip install -r test-requirements.txt --use-mirrors"
-script: nosetests tests
+  - "make bootstrap"
+script: tox
 
