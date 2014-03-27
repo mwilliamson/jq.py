@@ -100,6 +100,11 @@ cdef class _ErrorStore(object):
         self._errors = []
 
 
+class EmptyValue(object):
+    pass
+
+_NO_VALUE = EmptyValue()
+
 cdef class _Program(object):
     cdef jq_state* _jq
     cdef _ErrorStore _error_store
@@ -107,8 +112,10 @@ cdef class _Program(object):
     def __dealloc__(self):
         jq_teardown(&self._jq)
     
-    def transform(self, input, raw_input=False, raw_output=False, multiple_output=False):
-        string_input = input if raw_input else json.dumps(input)
+    def transform(self, value=_NO_VALUE, text=_NO_VALUE, raw_output=False, multiple_output=False):
+        if (value is _NO_VALUE) == (text is _NO_VALUE):
+            raise ValueError("Either the value or text argument should be set")
+        string_input = text if text is not _NO_VALUE else json.dumps(value)
         bytes_input = string_input.encode("utf8")
         
         self._error_store.clear()

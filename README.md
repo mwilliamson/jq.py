@@ -12,10 +12,10 @@ from jq import jq
 jq(".").transform("42") == "42"
 ```
 
-The `raw_input` argument can be used to treat the input as a raw JSON string:
+If the value is unparsed JSON text, pass it in using the `text` argument:
 
 ```python
-jq(".").transform("42", raw_input=True) == 42
+jq(".").transform(text="42") == 42
 ```
 
 The `raw_output` argument can be used to serialise the output into a JSON string:

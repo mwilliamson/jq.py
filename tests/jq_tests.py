@@ -25,7 +25,7 @@ def can_add_one_to_each_element_of_an_array():
 def input_string_is_parsed_to_json_if_raw_input_is_true():
     assert_equal(
         42,
-        jq(".").transform("42", raw_input=True)
+        jq(".").transform(text="42")
     )
 
 
@@ -65,7 +65,7 @@ def multiple_output_elements_are_returned_if_multiple_output_is_true():
 def multiple_inputs_in_raw_input_are_separated_by_newlines():
     assert_equal(
         [2, 3, 4],
-        jq(".+1").transform("1\n2\n3", raw_input=True, multiple_output=True)
+        jq(".+1").transform(text="1\n2\n3", multiple_output=True)
     )
 
 
@@ -108,7 +108,7 @@ def errors_do_not_leak_between_transformations():
 def value_error_is_raised_if_input_is_not_valid_json():
     program = jq(".x")
     try:
-        program.transform("!!", raw_input=True)
+        program.transform(text="!!")
         assert False, "Expected error"
     except ValueError as error:
         expected_error_str = "parse error: Invalid numeric literal\n"
@@ -119,7 +119,7 @@ def value_error_is_raised_if_input_is_not_valid_json():
 def unicode_strings_can_be_used_as_input():
     assert_equal(
         u"‽",
-        jq(".").transform(u'"‽"', raw_input=True)
+        jq(".").transform(text=u'"‽"')
     )
 
 
@@ -127,5 +127,5 @@ def unicode_strings_can_be_used_as_input():
 def unicode_strings_can_be_used_as_programs():
     assert_equal(
         u"Dragon‽",
-        jq(u'.+"‽"').transform(u'"Dragon"', raw_input=True)
+        jq(u'.+"‽"').transform(text=u'"Dragon"')
     )
