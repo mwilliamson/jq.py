@@ -24,6 +24,14 @@ The `text_output` argument can be used to serialise the output into JSON text:
 jq(".").transform("42", text_output=True) == '"42"'
 ```
 
+If there are multiple output elements,
+each element is represented by a separate line,
+irrespective of the value of `multiple_output`:
+
+```python
+jq(".[]").transform("[1, 2, 3]", text_output=True) == "1\n2\n3"
+```
+
 The `multiple_output` argument can be used for cases when multiple output elements are expected:
 
 ```python
