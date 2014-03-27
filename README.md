@@ -32,14 +32,15 @@ irrespective of the value of `multiple_output`:
 jq(".[]").transform("[1, 2, 3]", text_output=True) == "1\n2\n3"
 ```
 
-The `multiple_output` argument can be used for cases when multiple output elements are expected:
-
-```python
-jq(".[]+1").transform([1, 2, 3], multiple_output=True) == [2, 3, 4]
-```
-
-If there are multiple output elements, but `multiple_output` is not set to `True`, then the first output is used:
+If `multiple_output` is `False` (the default), then the first output is used:
 
 ```python
 jq(".[]+1").transform([1, 2, 3]) == 2
+```
+
+If `multiple_output` is `True`,
+all output elements are returned in an array:
+
+```python
+jq(".[]+1").transform([1, 2, 3], multiple_output=True) == [2, 3, 4]
 ```
