@@ -55,7 +55,7 @@ def jq(object program):
         raise Exception("jq_init failed")
     
     cdef _ErrorStore error_store = _ErrorStore.__new__(_ErrorStore)
-    error_store._errors = []
+    error_store.clear()
     
     jq_set_error_cb(jq, store_error, <void*>error_store)
     
@@ -91,6 +91,9 @@ cdef class _ErrorStore(object):
     
     cdef void store_error(self, char* error):
         self._errors.append(error)
+    
+    cdef void clear(self):
+        self._errors = []
 
 
 cdef class _Program(object):
@@ -103,6 +106,9 @@ cdef class _Program(object):
     def transform(self, input, raw_input=False, raw_output=False, multiple_output=False):
         string_input = input if raw_input else json.dumps(input)
         bytes_input = string_input.encode("utf8")
+        
+        self._error_store.clear()
+        
         result_bytes = self._string_to_strings(bytes_input)
         
         if self._error_store.has_errors():

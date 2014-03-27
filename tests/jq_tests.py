@@ -93,6 +93,18 @@ def value_error_is_raised_if_input_cannot_be_processed_by_program():
 
 
 @istest
+def errors_do_not_leak_between_transformations():
+    program = jq(".x")
+    try:
+        program.transform(1)
+        assert False, "Expected error"
+    except ValueError as error:
+        pass
+    
+    assert_equal(1, program.transform({"x": 1}))
+
+
+@istest
 def unicode_strings_can_be_used_as_input():
     assert_equal(
         u"‽",
