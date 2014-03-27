@@ -37,6 +37,6 @@ setup: README
 _virtualenv: 
 	virtualenv _virtualenv
 
-jq.c: _virtualenv
+jq.c: _virtualenv jq.pyx
 	_virtualenv/bin/pip install cython
 	_virtualenv/bin/cython jq.pyx
