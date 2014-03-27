@@ -71,6 +71,14 @@ def multiple_inputs_in_raw_input_are_separated_by_newlines():
 
 @istest
 def value_error_is_raised_if_program_is_invalid():
+    try:
+        jq("!")
+        assert False, "Expected error"
+    except ValueError as error:
+        expected_error_str = """error: syntax error, unexpected INVALID_CHARACTER, expecting $end
+!
+1 compile error"""
+        assert_equal(str(error), expected_error_str)
     assert_raises(ValueError, lambda: jq("!"))
 
 

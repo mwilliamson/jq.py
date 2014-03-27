@@ -1,6 +1,6 @@
 .PHONY: test upload clean bootstrap setup assert-converted-readme
 
-test:
+test: bootstrap
 	_virtualenv/bin/nosetests tests
 
 test-all: setup

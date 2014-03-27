@@ -2,8 +2,19 @@ import json
 
 
 cdef extern from "jv.h":
+    ctypedef enum jv_kind:
+      JV_KIND_INVALID,
+      JV_KIND_NULL,
+      JV_KIND_FALSE,
+      JV_KIND_TRUE,
+      JV_KIND_NUMBER,
+      JV_KIND_STRING,
+      JV_KIND_ARRAY,
+      JV_KIND_OBJECT
+
     ctypedef struct jv:
         pass
+    jv_kind jv_get_kind(jv)
     int jv_is_valid(jv)
     char* jv_string_value(jv)
     jv jv_dump_string(jv, int flags)
@@ -24,12 +35,16 @@ cdef extern from "jv.h":
 cdef extern from "jq.h":
     ctypedef struct jq_state:
         pass
+    
+    ctypedef void (*jq_err_cb)(void *, jv)
         
     jq_state *jq_init()
     void jq_teardown(jq_state **)
     int jq_compile(jq_state *, const char* str)
     void jq_start(jq_state *, jv value, int flags)
     jv jq_next(jq_state *)
+    void jq_set_error_cb(jq_state *, jq_err_cb, void *)
+    void jq_get_error_cb(jq_state *, jq_err_cb *, void **)
     
 
 def jq(object program):
@@ -39,8 +54,15 @@ def jq(object program):
     if not jq:
         raise Exception("jq_init failed")
     
-    # TODO: jq_compile prints error to stderr
+    cdef _ErrorStore error_store = _ErrorStore.__new__(_ErrorStore)
+    error_store._errors = []
+    
+    jq_set_error_cb(jq, store_error, <void*>error_store)
+    
     cdef int compiled = jq_compile(jq, program_bytes)
+    
+    if len(error_store._errors) > 0:
+        raise ValueError("\n".join(error_store._errors))
     
     if not compiled:
         raise ValueError("program was not valid")
@@ -48,6 +70,20 @@ def jq(object program):
     cdef _Program wrapped_program = _Program.__new__(_Program)
     wrapped_program._jq = jq
     return wrapped_program
+
+
+cdef void store_error(void* store_ptr, jv error):
+    # TODO: handle errors not of JV_KIND_STRING
+    cdef _ErrorStore store = <_ErrorStore>store_ptr
+    if jv_get_kind(error) == JV_KIND_STRING:
+        store.store_error(jv_string_value(error))
+
+
+cdef class _ErrorStore(object):
+    cdef object _errors
+    
+    cdef store_error(self, char* error):
+        self._errors.append(error)
 
 
 cdef class _Program(object):
@@ -67,7 +103,6 @@ cdef class _Program(object):
             return [json.loads(s) for s in result_strings]
         else:
             return json.loads(next(iter(result_strings)))
-        
 
     cdef object _string_to_strings(self, char* input):
         cdef jv_parser* parser = jv_parser_new(<jv_parser_flags>0)
