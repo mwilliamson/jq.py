@@ -18,10 +18,10 @@ If the value is unparsed JSON text, pass it in using the `text` argument:
 jq(".").transform(text="42") == 42
 ```
 
-The `raw_output` argument can be used to serialise the output into a JSON string:
+The `text_output` argument can be used to serialise the output into JSON text:
 
 ```python
-jq(".").transform("42", raw_output=True) == '"42"'
+jq(".").transform("42", text_output=True) == '"42"'
 ```
 
 The `multiple_output` argument can be used for cases when multiple output elements are expected:

@@ -112,7 +112,7 @@ cdef class _Program(object):
     def __dealloc__(self):
         jq_teardown(&self._jq)
     
-    def transform(self, value=_NO_VALUE, text=_NO_VALUE, raw_output=False, multiple_output=False):
+    def transform(self, value=_NO_VALUE, text=_NO_VALUE, text_output=False, multiple_output=False):
         if (value is _NO_VALUE) == (text is _NO_VALUE):
             raise ValueError("Either the value or text argument should be set")
         string_input = text if text is not _NO_VALUE else json.dumps(value)
@@ -126,7 +126,7 @@ cdef class _Program(object):
             raise ValueError(self._error_store.error_string())
         
         result_strings = map(lambda s: s.decode("utf8"), result_bytes)
-        if raw_output:
+        if text_output:
             return "\n".join(result_strings)
         elif multiple_output:
             return [json.loads(s) for s in result_strings]

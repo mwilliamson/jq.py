@@ -30,18 +30,18 @@ def input_string_is_parsed_to_json_if_raw_input_is_true():
 
 
 @istest
-def output_is_serialised_to_json_string_if_raw_output_is_true():
+def output_is_serialised_to_json_string_if_text_output_is_true():
     assert_equal(
         '"42"',
-        jq(".").transform("42", raw_output=True)
+        jq(".").transform("42", text_output=True)
     )
 
 
 @istest
-def elements_in_raw_output_are_separated_by_newlines():
+def elements_in_text_output_are_separated_by_newlines():
     assert_equal(
         "1\n2\n3",
-        jq(".[]").transform([1, 2, 3], raw_output=True)
+        jq(".[]").transform([1, 2, 3], text_output=True)
     )
 
 
