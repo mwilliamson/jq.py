@@ -61,8 +61,8 @@ def jq(object program):
     
     cdef int compiled = jq_compile(jq, program_bytes)
     
-    if len(error_store._errors) > 0:
-        raise ValueError("\n".join(error_store._errors))
+    if error_store.has_errors():
+        raise ValueError(error_store.error_string())
     
     if not compiled:
         raise ValueError("program was not valid")
@@ -82,7 +82,13 @@ cdef void store_error(void* store_ptr, jv error):
 cdef class _ErrorStore(object):
     cdef object _errors
     
-    cdef store_error(self, char* error):
+    cdef int has_errors(self):
+        return len(self._errors)
+    
+    cdef object error_string(self):
+        return "\n".join(self._errors)
+    
+    cdef void store_error(self, char* error):
         self._errors.append(error)
 
 
