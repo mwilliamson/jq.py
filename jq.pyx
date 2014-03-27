@@ -69,6 +69,7 @@ def jq(object program):
     
     cdef _Program wrapped_program = _Program.__new__(_Program)
     wrapped_program._jq = jq
+    wrapped_program._error_store = error_store
     return wrapped_program
 
 
@@ -94,6 +95,7 @@ cdef class _ErrorStore(object):
 
 cdef class _Program(object):
     cdef jq_state* _jq
+    cdef _ErrorStore _error_store
 
     def __dealloc__(self):
         jq_teardown(&self._jq)
@@ -102,6 +104,10 @@ cdef class _Program(object):
         string_input = input if raw_input else json.dumps(input)
         bytes_input = string_input.encode("utf8")
         result_bytes = self._string_to_strings(bytes_input)
+        
+        if self._error_store.has_errors():
+            raise ValueError(self._error_store.error_string())
+        
         result_strings = map(lambda s: s.decode("utf8"), result_bytes)
         if raw_output:
             return "\n".join(result_strings)

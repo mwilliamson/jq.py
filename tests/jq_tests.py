@@ -79,7 +79,17 @@ def value_error_is_raised_if_program_is_invalid():
 !
 1 compile error"""
         assert_equal(str(error), expected_error_str)
-    assert_raises(ValueError, lambda: jq("!"))
+
+
+@istest
+def value_error_is_raised_if_input_cannot_be_processed_by_program():
+    program = jq(".x")
+    try:
+        program.transform(1)
+        assert False, "Expected error"
+    except ValueError as error:
+        expected_error_str = "jq: error: Cannot index number with string"
+        assert_equal(str(error), expected_error_str)
 
 
 @istest
