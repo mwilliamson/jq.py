@@ -146,7 +146,7 @@ cdef class _Program(object):
             else:
                 if jv_invalid_has_msg(jv_copy(value)):
                     error_message = jv_invalid_get_msg(value)
-                    full_error_message = "parse error: {0}\n".format(jv_string_value(error_message))
+                    full_error_message = b"parse error: " + jv_string_value(error_message) + b"\n"
                     self._error_store.store_error(full_error_message)
                     jv_free(error_message)
                 else:
