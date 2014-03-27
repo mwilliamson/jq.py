@@ -94,7 +94,7 @@ cdef class _ErrorStore(object):
         return "\n".join(self._errors)
     
     cdef void store_error(self, char* error):
-        self._errors.append(error)
+        self._errors.append(error.decode("utf8"))
     
     cdef void clear(self):
         self._errors = []
