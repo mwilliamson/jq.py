@@ -14,11 +14,15 @@ cdef extern from "jv.h":
 
     ctypedef struct jv:
         pass
+    
     jv_kind jv_get_kind(jv)
     int jv_is_valid(jv)
+    jv jv_copy(jv)
+    void jv_free(jv)
+    jv jv_invalid_get_msg(jv)
+    int jv_invalid_has_msg(jv)
     char* jv_string_value(jv)
     jv jv_dump_string(jv, int flags)
-    void jv_free(jv)
     
     cdef struct jv_parser:
         pass
@@ -126,12 +130,20 @@ cdef class _Program(object):
         cdef jv_parser* parser = jv_parser_new(<jv_parser_flags>0)
         jv_parser_set_buf(parser, input, len(input), 0)
         cdef jv value
+        cdef jv error_message
         results = []
         while True:
             value = jv_parser_next(parser)
             if jv_is_valid(value):
                 self._process(value, results)
             else:
+                if jv_invalid_has_msg(jv_copy(value)):
+                    error_message = jv_invalid_get_msg(value)
+                    full_error_message = "parse error: {0}\n".format(jv_string_value(error_message))
+                    self._error_store.store_error(full_error_message)
+                    jv_free(error_message)
+                else:
+                    jv_free(value)
                 break
                 
         jv_parser_free(parser)

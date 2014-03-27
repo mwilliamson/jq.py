@@ -105,6 +105,17 @@ def errors_do_not_leak_between_transformations():
 
 
 @istest
+def value_error_is_raised_if_input_is_not_valid_json():
+    program = jq(".x")
+    try:
+        program.transform("!!", raw_input=True)
+        assert False, "Expected error"
+    except ValueError as error:
+        expected_error_str = "parse error: Invalid numeric literal\n"
+        assert_equal(str(error), expected_error_str)
+
+
+@istest
 def unicode_strings_can_be_used_as_input():
     assert_equal(
         u"‽",
