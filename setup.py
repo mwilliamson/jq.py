@@ -10,13 +10,8 @@ from distutils.command.build_ext import build_ext
 def path_in_dir(relative_path):
     return os.path.join(os.path.dirname(__file__), relative_path)
 
-
-def read_or_empty_string(fname):
-    path = path_in_dir(fname)
-    if os.path.exists(path):
-        return open(path).read()
-    else:
-        return ""
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
 jq_lib_dir = path_in_dir("_jq-lib")
@@ -60,7 +55,7 @@ setup(
     name='jq',
     version='0.1.0',
     description='jq is a lightweight and flexible JSON processor.',
-    long_description=read_or_empty_string("README"),
+    long_description=read("README.rst"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/jq.py',
     license='BSD 2-Clause',
