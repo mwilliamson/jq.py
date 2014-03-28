@@ -1,5 +1,7 @@
 # coding=utf8
 
+from __future__ import unicode_literals
+
 from nose.tools import istest, assert_equal, assert_raises
 
 from jq import jq
@@ -118,14 +120,14 @@ def value_error_is_raised_if_input_is_not_valid_json():
 @istest
 def unicode_strings_can_be_used_as_input():
     assert_equal(
-        u"‽",
-        jq(".").transform(text=u'"‽"')
+        "‽",
+        jq(".").transform(text='"‽"')
     )
 
 
 @istest
 def unicode_strings_can_be_used_as_programs():
     assert_equal(
-        u"Dragon‽",
-        jq(u'.+"‽"').transform(text=u'"Dragon"')
+        "Dragon‽",
+        jq('.+"‽"').transform(text='"Dragon"')
     )
