@@ -7,7 +7,7 @@ test-all: setup
 	_virtualenv/bin/tox
 	make clean
 	
-upload: setup assert-converted-readme
+upload: setup assert-converted-readme jq.c
 	python setup.py sdist upload
 	make clean
 	
