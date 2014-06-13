@@ -3,6 +3,10 @@ jq.py: a lightweight and flexible JSON processor
 
 This project contains Python bindings for
 `jq <http://stedolan.github.io/jq/>`_.
+Installation requires Git and any programs required to build jq, such as gcc.
+
+During installation,
+jq 1.4 is cloned from GitHub and built.
 
 Examples
 --------
