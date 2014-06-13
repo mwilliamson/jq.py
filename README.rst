@@ -8,14 +8,20 @@ Installation requires Git and any programs required to build jq, such as gcc.
 During installation,
 jq 1.4 is cloned from GitHub and built.
 
-Examples
---------
+Usage
+-----
+
+A program can be compiled by passing it to ``jq.jq``.
+To apply the program to an input, called the ``transform`` method.
+jq.py expects the value to be valid JSON,
+such as values returned from ``json.load``.
 
 .. code-block:: python
 
     from jq import jq
 
     jq(".").transform("42") == "42"
+    jq(".").transform({"a": 1}) == {"a": 1}
 
 If the value is unparsed JSON text, pass it in using the ``text``
 argument:
