@@ -1,8 +1,6 @@
 jq.py: a lightweight and flexible JSON processor
 ================================================
 
-Warning: the API is not stable.
-
 This project contains Python bindings for
 `jq <http://stedolan.github.io/jq/>`_.
 
