@@ -27,10 +27,7 @@ cdef extern from "jv.h":
     cdef struct jv_parser:
         pass
     
-    ctypedef enum jv_parser_flags:
-        JV_PARSE_EXPLODE_TOPLEVEL_ARRAY = 1
-    
-    jv_parser* jv_parser_new(jv_parser_flags)
+    jv_parser* jv_parser_new(int)
     void jv_parser_free(jv_parser*)
     void jv_parser_set_buf(jv_parser*, const char*, int, int)
     jv jv_parser_next(jv_parser*)
@@ -134,7 +131,7 @@ cdef class _Program(object):
             return json.loads(next(iter(result_strings)))
 
     cdef object _string_to_strings(self, char* input):
-        cdef jv_parser* parser = jv_parser_new(<jv_parser_flags>0)
+        cdef jv_parser* parser = jv_parser_new(0)
         jv_parser_set_buf(parser, input, len(input), 0)
         cdef jv value
         cdef jv error_message
