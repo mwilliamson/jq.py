@@ -2,10 +2,17 @@
 
 import os
 import subprocess
+import tarfile
+import shutil
+
 from setuptools import setup
 from distutils.extension import Extension
 from distutils.command.build_ext import build_ext
 
+try:
+    from urllib import urlretrieve
+except ImportError:
+    from urllib.request import urlretrieve
 
 def path_in_dir(relative_path):
     return os.path.join(os.path.dirname(__file__), relative_path)
@@ -14,29 +21,24 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-jq_lib_dir = path_in_dir("_jq-lib")
+tarball_path = path_in_dir("_jq-lib-1.4.tar.gz")
+jq_lib_dir = path_in_dir("jq-jq-1.4")
 
 class jq_build_ext(build_ext):
     def run(self):
+        if os.path.exists(tarball_path):
+            os.unlink(tarball_path)
+        urlretrieve("https://github.com/stedolan/jq/archive/jq-1.4.tar.gz", tarball_path)
+        
+        if os.path.exists(jq_lib_dir):
+            shutil.rmtree(jq_lib_dir)
+        tarfile.open(tarball_path, "r:gz").extractall(path_in_dir("."))
         
         def command(args):
-            subprocess.check_call(args, cwd=path_in_dir(jq_lib_dir))
-            
-        if os.path.exists(jq_lib_dir):
-            command(["git", "fetch"])
-            command(["git", "checkout", "jq-1.4"])
-        else:    
-            subprocess.check_call([
-                "git", "clone",
-                "https://github.com/stedolan/jq.git",
-                jq_lib_dir
-            ])
-            command(["git", "checkout", "jq-1.4"])
+            subprocess.check_call(args, cwd=jq_lib_dir)
         
-        command(["mkdir", "-p", "m4"])
         command(["autoreconf", "-i"])
         command(["./configure", "CFLAGS=-fPIC"])
-        command(["make", "clean"])
         command(["make"])
         
         build_ext.run(self)
