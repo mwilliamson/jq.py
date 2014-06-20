@@ -3,10 +3,23 @@ jq.py: a lightweight and flexible JSON processor
 
 This project contains Python bindings for
 `jq <http://stedolan.github.io/jq/>`_.
-Installation requires Git and any programs required to build jq, such as gcc.
+
+Installation
+------------
 
 During installation,
-jq 1.4 is cloned from GitHub and built.
+jq 1.4 is downloaded over HTTPS from GitHub and built.
+Therefore, installation requires any programs required to build jq.
+This includes:
+
+* The normal C compiler toolchain, such as gcc and make.
+  Installable on Debian, Ubuntu and relatives by installing the package ``build-essential``.
+
+* Autoconf
+
+* Flex
+
+* Bison
 
 Usage
 -----
