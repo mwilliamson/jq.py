@@ -21,6 +21,17 @@ This includes:
 
 * Bison
 
+* libtool
+
+* Python headers.
+  Installable on Debian, Ubuntu and relatives by installing the package ``python-dev``.
+  
+If on Debian, Ubuntu or relatives, running the following packages should be sufficient:
+
+.. code-block:: sh
+
+    apt-get install build-essential autoconf flex bison libtool python-dev
+
 Usage
 -----
 
