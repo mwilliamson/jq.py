@@ -36,7 +36,7 @@ Usage
 -----
 
 A program can be compiled by passing it to ``jq.jq``.
-To apply the program to an input, called the ``transform`` method.
+To apply the program to an input, call the ``transform`` method.
 jq.py expects the value to be valid JSON,
 such as values returned from ``json.load``.
 
