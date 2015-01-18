@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import platform
+import sysconfig
 import subprocess
 import tarfile
 import shutil
@@ -53,6 +55,10 @@ class jq_build_ext(build_ext):
                     configure_args.append('YACC=' + yacc)
             except subprocess.CalledProcessError:
                 print("No Homebrew yacc found")
+
+        macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
+        if macosx_deployment_target:
+            os.environ['MACOSX_DEPLOYMENT_TARGET'] = macosx_deployment_target
 
         command(["autoreconf", "-i"])
         command(["./configure"] + configure_args)
