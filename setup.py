@@ -2,10 +2,15 @@
 
 import os
 import platform
-import sysconfig
 import subprocess
 import tarfile
 import shutil
+
+try:
+    import sysconfig
+except ImportError:
+    # Python 2.6
+    from distutils import sysconfig
 
 from setuptools import setup
 from distutils.extension import Extension
