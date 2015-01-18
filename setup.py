@@ -76,9 +76,7 @@ jq_extension = Extension(
     "jq",
     sources=["jq.c"],
     include_dirs=[jq_lib_dir],
-    #libraries=["jq"],
     extra_objects=[os.path.join(jq_lib_dir, ".libs/libjq.a")],
-    #library_dirs=[os.path.join(jq_lib_dir, ".libs")],
 )
 
 setup(
