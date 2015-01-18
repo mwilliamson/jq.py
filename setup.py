@@ -35,10 +35,27 @@ class jq_build_ext(build_ext):
         tarfile.open(tarball_path, "r:gz").extractall(path_in_dir("."))
         
         def command(args):
+            print("Executing: %s" % ' '.join(args))
             subprocess.check_call(args, cwd=jq_lib_dir)
+
+        configure_args = ["CFLAGS=-fPIC"]
         
+        if os.path.exists('/usr/local/bin/brew') and os.path.exists('/usr/local/Cellar'):
+            print("Found Homebrew installation")
+            # Mac OS X with Homebrew
+            # Mac OS X usually ships with an old bison (yacc)
+            # E.g.: OS X 10.9 has bison 2.3, but jq requires bison >= 2.5
+            # Try to use Homebrew version of bison (3.0.3 as of this writing)
+            try:
+                yacc = subprocess.check_output("/usr/local/bin/brew ls bison | grep bin/yacc", shell=True).rstrip()
+                print("Found Homebrew yacc at %s" % yacc)
+                if yacc:
+                    configure_args.append('YACC=' + yacc)
+            except subprocess.CalledProcessError:
+                print("No Homebrew yacc found")
+
         command(["autoreconf", "-i"])
-        command(["./configure", "CFLAGS=-fPIC"])
+        command(["./configure"] + configure_args)
         command(["make"])
         
         build_ext.run(self)
