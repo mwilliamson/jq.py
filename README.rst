@@ -13,7 +13,10 @@ Therefore, installation requires any programs required to build jq.
 This includes:
 
 * The normal C compiler toolchain, such as gcc and make.
-  Installable on Debian, Ubuntu and relatives by installing the package ``build-essential``.
+
+  - Installable on Debian, Ubuntu and relatives by installing the package ``build-essential``.
+  - Installable on Red Hat/Fedora/CentOS/etc. with ``yum groupinstall "Development Tools"``.
+  - On Mac OS X, you probably want to install `Xcode <https://developer.apple.com/xcode/>`_.
 
 * Autoconf
 
@@ -21,16 +24,27 @@ This includes:
 
 * Bison
 
+  - At least some versions of Mac OS X ship a version of ``bison`` that is too old for ``jq`` to use.
+    If you have `Homebrew <http://brew.sh/>`_, try ``brew install bison``.
+
 * libtool
 
 * Python headers.
   Installable on Debian, Ubuntu and relatives by installing the package ``python-dev``.
-  
+
 If on Debian, Ubuntu or relatives, running the following packages should be sufficient:
 
 .. code-block:: sh
 
     apt-get install build-essential autoconf flex bison libtool python-dev
+
+If on Red Hat, Fedora, CentOS, etc., try:
+
+.. code-block:: sh
+
+    yum groupinstall "Development Tools"
+    yum install autoconf flex bison libtool python
+
 
 Usage
 -----
