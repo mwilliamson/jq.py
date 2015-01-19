@@ -16,7 +16,8 @@ This includes:
 
   - Installable on Debian, Ubuntu and relatives by installing the package ``build-essential``.
   - Installable on Red Hat/Fedora/CentOS/etc. with ``yum groupinstall "Development Tools"``.
-  - On Mac OS X, you probably want to install `Xcode <https://developer.apple.com/xcode/>`_.
+  - On Mac OS X, you probably want to install `Xcode
+    <https://developer.apple.com/xcode/>`_ and `Homebrew <http://brew.sh/>`_.
 
 * Autoconf
 
@@ -44,6 +45,12 @@ If on Red Hat, Fedora, CentOS, etc., try:
 
     yum groupinstall "Development Tools"
     yum install autoconf flex bison libtool python
+
+If on Mac OS X, try:
+
+.. code-block:: sh
+
+    brew install autoconf automake bison libtool
 
 
 Usage
