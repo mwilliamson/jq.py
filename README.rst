@@ -25,13 +25,9 @@ This includes:
 
 * Bison
 
-  - At least some versions of Mac OS X ship a version of ``bison`` that is too old for ``jq`` to use.
-    If you have `Homebrew <http://brew.sh/>`_, try ``brew install bison``.
-
 * libtool
 
 * Python headers.
-  Installable on Debian, Ubuntu and relatives by installing the package ``python-dev``.
 
 If on Debian, Ubuntu or relatives, running the following packages should be sufficient:
 
@@ -52,6 +48,7 @@ If on Mac OS X, try:
 
     brew install autoconf automake bison libtool
 
+At least some versions of Mac OS X ship a version of ``bison`` that is too old for ``jq`` to use.
 
 Usage
 -----
