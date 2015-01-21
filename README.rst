@@ -47,7 +47,7 @@ Mac OS X
 ~~~~~~~~
 
 If on Mac OS X, you probably want to install
-`Xcode<https://developer.apple.com/xcode/>`_ and `Homebrew <http://brew.sh/>`_.
+`Xcode <https://developer.apple.com/xcode/>`_ and `Homebrew <http://brew.sh/>`_.
 Once Homebrew is installed, you can install the remaining dependencies with:
 
 .. code-block:: sh
