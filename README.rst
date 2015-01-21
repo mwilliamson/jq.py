@@ -14,11 +14,6 @@ This includes:
 
 * The normal C compiler toolchain, such as gcc and make.
 
-  - Installable on Debian, Ubuntu and relatives by installing the package ``build-essential``.
-  - Installable on Red Hat/Fedora/CentOS/etc. with ``yum groupinstall "Development Tools"``.
-  - On Mac OS X, you probably want to install `Xcode
-    <https://developer.apple.com/xcode/>`_ and `Homebrew <http://brew.sh/>`_.
-
 * Autoconf
 
 * Flex
@@ -29,26 +24,38 @@ This includes:
 
 * Python headers.
 
-If on Debian, Ubuntu or relatives, running the following packages should be sufficient:
+Debian, Ubuntu or relatives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If on Debian, Ubuntu or relatives, running the following command should be sufficient:
 
 .. code-block:: sh
 
     apt-get install build-essential autoconf flex bison libtool python-dev
 
-If on Red Hat, Fedora, CentOS, etc., try:
+Red Hat, Fedora, CentOS or relatives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If on Red Hat, Fedora, CentOS, or relatives, running the following command should be sufficient:
 
 .. code-block:: sh
 
     yum groupinstall "Development Tools"
     yum install autoconf flex bison libtool python
 
-If on Mac OS X, try:
+Mac OS X
+~~~~~~~~
+
+If on Mac OS X, you probably want to install
+`Xcode<https://developer.apple.com/xcode/>`_ and `Homebrew <http://brew.sh/>`_.
+Once Homebrew is installed, you can install the remaining dependencies with:
 
 .. code-block:: sh
 
     brew install autoconf automake bison libtool
 
-At least some versions of Mac OS X ship a version of ``bison`` that is too old for ``jq`` to use.
+Note that at least some versions of Mac OS X ship a version of ``bison`` that is too old for ``jq`` to use.
+jq.py will try to use the version from Homebrew if available.
 
 Usage
 -----
