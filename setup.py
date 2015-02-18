@@ -29,13 +29,13 @@ def read(fname):
 
 
 tarball_path = path_in_dir("_jq-lib-1.4.tar.gz")
-jq_lib_dir = path_in_dir("jq-jq-1.4")
+jq_lib_dir = path_in_dir("jq-1.4")
 
 class jq_build_ext(build_ext):
     def run(self):
         if os.path.exists(tarball_path):
             os.unlink(tarball_path)
-        urlretrieve("https://github.com/stedolan/jq/archive/jq-1.4.tar.gz", tarball_path)
+        urlretrieve("https://stedolan.github.io/jq/download/source/jq-1.4.tar.gz", tarball_path)
         
         if os.path.exists(jq_lib_dir):
             shutil.rmtree(jq_lib_dir)
@@ -65,7 +65,6 @@ class jq_build_ext(build_ext):
         if macosx_deployment_target:
             os.environ['MACOSX_DEPLOYMENT_TARGET'] = macosx_deployment_target
 
-        command(["autoreconf", "-i"])
         command(["./configure"] + configure_args)
         command(["make"])
         
