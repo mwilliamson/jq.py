@@ -89,7 +89,7 @@ separate line, irrespective of the value of ``multiple_output``:
 
 .. code-block:: python
 
-    jq(".[]").transform("[1, 2, 3]", text_output=True) == "1\n2\n3"
+    jq(".[]").transform([1, 2, 3], text_output=True) == "1\n2\n3"
 
 If ``multiple_output`` is ``False`` (the default), then the first output
 is used:
