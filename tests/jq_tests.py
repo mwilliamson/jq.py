@@ -84,17 +84,6 @@ def value_error_is_raised_if_program_is_invalid():
 
 
 @istest
-def cannot_iterate_error_is_raised_if_input_is_string_and_not_parsed():
-    program = jq(".[]")
-    try:
-        program.transform("[1, 2, 3]")
-        assert False, "Expected error"
-    except ValueError as error:
-        expected_error_str = "jq: error: Cannot iterate over string"
-        assert_equal(str(error), expected_error_str)
-
-
-@istest
 def value_error_is_raised_if_input_cannot_be_processed_by_program():
     program = jq(".x")
     try:
