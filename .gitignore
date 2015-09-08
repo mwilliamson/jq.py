@@ -6,5 +6,5 @@
 /.tox
 /*.egg-info
 /_jq-lib
-/jq-jq-1.4
-/_jq-lib-1.4.tar.gz
+/jq-jq-1.5
+/_jq-lib-1.5.tar.gz

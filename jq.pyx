@@ -141,18 +141,22 @@ cdef class _Program(object):
             if jv_is_valid(value):
                 self._process(value, results)
             else:
-                if jv_invalid_has_msg(jv_copy(value)):
-                    error_message = jv_invalid_get_msg(value)
-                    full_error_message = b"parse error: " + jv_string_value(error_message) + b"\n"
-                    self._error_store.store_error(full_error_message)
-                    jv_free(error_message)
-                else:
-                    jv_free(value)
+                self._handle_invalid_jv(value, b"parse error: ")
                 break
                 
         jv_parser_free(parser)
         
         return results
+    
+    cdef void _handle_invalid_jv(self, jv value, char* prefix):
+        if jv_invalid_has_msg(jv_copy(value)):
+            error_message = jv_invalid_get_msg(value)
+            full_error_message = prefix + jv_string_value(error_message)
+            self._error_store.store_error(full_error_message)
+            jv_free(error_message)
+        else:
+            jv_free(value)
+        
 
 
     cdef void _process(self, jv value, object output):
@@ -166,7 +170,7 @@ cdef class _Program(object):
         while True:
             result = jq_next(self._jq)
             if not jv_is_valid(result):
-                jv_free(result)
+                self._handle_invalid_jv(result, b"")
                 return
             else:
                 dumped = jv_dump_string(result, dumpopts)

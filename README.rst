@@ -8,17 +8,13 @@ Installation
 ------------
 
 During installation,
-the source for jq 1.4 is downloaded over HTTPS and built.
+the source for jq 1.5 is downloaded over HTTPS and built.
 Therefore, installation requires any programs required to build jq.
 This includes:
 
 * Autoreconf
 
 * The normal C compiler toolchain, such as gcc and make.
-
-* Flex
-
-* Bison
 
 * libtool
 
@@ -31,7 +27,7 @@ If on Debian, Ubuntu or relatives, running the following command should be suffi
 
 .. code-block:: sh
 
-    apt-get install autoconf build-essential flex bison libtool python-dev
+    apt-get install autoconf build-essential libtool python-dev
 
 Red Hat, Fedora, CentOS or relatives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,7 +37,7 @@ If on Red Hat, Fedora, CentOS, or relatives, running the following command shoul
 .. code-block:: sh
 
     yum groupinstall "Development Tools"
-    yum install autoconf flex bison libtool python
+    yum install autoconf libtool python
 
 Mac OS X
 ~~~~~~~~
@@ -52,10 +48,7 @@ Once Homebrew is installed, you can install the remaining dependencies with:
 
 .. code-block:: sh
 
-    brew install autoconf bison libtool
-
-Note that at least some versions of Mac OS X ship a version of ``bison`` that is too old for ``jq`` to use.
-jq.py will try to use the version from Homebrew if available.
+    brew install autoconf libtool
 
 Usage
 -----

@@ -77,9 +77,7 @@ def value_error_is_raised_if_program_is_invalid():
         jq("!")
         assert False, "Expected error"
     except ValueError as error:
-        expected_error_str = """error: syntax error, unexpected INVALID_CHARACTER, expecting $end
-!
-1 compile error"""
+        expected_error_str = "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting $end (Unix shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error"
         assert_equal(str(error), expected_error_str)
 
 
@@ -90,7 +88,7 @@ def value_error_is_raised_if_input_cannot_be_processed_by_program():
         program.transform(1)
         assert False, "Expected error"
     except ValueError as error:
-        expected_error_str = "jq: error: Cannot index number with string"
+        expected_error_str = "Cannot index number with string \"x\""
         assert_equal(str(error), expected_error_str)
 
 
@@ -113,7 +111,7 @@ def value_error_is_raised_if_input_is_not_valid_json():
         program.transform(text="!!")
         assert False, "Expected error"
     except ValueError as error:
-        expected_error_str = "parse error: Invalid numeric literal\n"
+        expected_error_str = "parse error: Invalid numeric literal at EOF at line 1, column 2"
         assert_equal(str(error), expected_error_str)
 
 
