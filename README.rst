@@ -27,7 +27,7 @@ If on Debian, Ubuntu or relatives, running the following command should be suffi
 
 .. code-block:: sh
 
-    apt-get install autoconf build-essential libtool python-dev
+    apt-get install autoconf automake build-essential libtool python-dev
 
 Red Hat, Fedora, CentOS or relatives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,7 +37,7 @@ If on Red Hat, Fedora, CentOS, or relatives, running the following command shoul
 .. code-block:: sh
 
     yum groupinstall "Development Tools"
-    yum install autoconf libtool python
+    yum install autoconf automake libtool python
 
 Mac OS X
 ~~~~~~~~
@@ -48,7 +48,7 @@ Once Homebrew is installed, you can install the remaining dependencies with:
 
 .. code-block:: sh
 
-    brew install autoconf libtool
+    brew install autoconf automake libtool
 
 Usage
 -----
