@@ -51,7 +51,7 @@ class jq_build_ext(build_ext):
 
         command(["autoreconf", "-i"])
         command(["./configure", "CFLAGS=-fPIC", "--disable-maintainer-mode"])
-        command(["make"])
+        command(["make", "LDFLAGS=-all-static"])
         
         build_ext.run(self)
 
