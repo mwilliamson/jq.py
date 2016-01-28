@@ -22,7 +22,7 @@ except ImportError:
     from urllib.request import urlretrieve
 
 def path_in_dir(relative_path):
-    return os.path.join(os.path.dirname(__file__), relative_path)
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), relative_path))
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
