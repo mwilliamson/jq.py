@@ -28,32 +28,47 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-tarball_path = path_in_dir("_jq-lib-1.5.tar.gz")
+jq_lib_tarball_path = path_in_dir("_jq-lib-1.5.tar.gz")
 jq_lib_dir = path_in_dir("jq-jq-1.5")
 
 class jq_build_ext(build_ext):
     def run(self):
-        if os.path.exists(tarball_path):
-            os.unlink(tarball_path)
-        urlretrieve("https://github.com/stedolan/jq/archive/jq-1.5.tar.gz", tarball_path)
+        self._build_libjq()
+        build_ext.run(self)
+    
+    def _build_libjq(self):
+        self._build_lib(
+            source_url="https://github.com/stedolan/jq/archive/jq-1.5.tar.gz",
+            tarball_path=jq_lib_tarball_path,
+            lib_dir=jq_lib_dir,
+            commands=[
+                ["autoreconf", "-i"],
+                ["./configure", "CFLAGS=-fPIC", "--disable-maintainer-mode"],
+                ["make"],
+            ])
         
-        if os.path.exists(jq_lib_dir):
-            shutil.rmtree(jq_lib_dir)
-        tarfile.open(tarball_path, "r:gz").extractall(path_in_dir("."))
-        
-        def command(args):
-            print("Executing: %s" % ' '.join(args))
-            subprocess.check_call(args, cwd=jq_lib_dir)
+    def _build_lib(self, source_url, tarball_path, lib_dir, commands):
+        self._download_tarball(source_url, tarball_path)
 
         macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
         if macosx_deployment_target:
             os.environ['MACOSX_DEPLOYMENT_TARGET'] = macosx_deployment_target
 
-        command(["autoreconf", "-i"])
-        command(["./configure", "CFLAGS=-fPIC", "--disable-maintainer-mode"])
-        command(["make"])
+        def run_command(args):
+            print("Executing: %s" % ' '.join(args))
+            subprocess.check_call(args, cwd=lib_dir)
+            
+        for command in commands:
+            run_command(command)
+    
+    def _download_tarball(self, source_url, tarball_path):
+        if os.path.exists(tarball_path):
+            os.unlink(tarball_path)
+        urlretrieve(source_url, tarball_path)
         
-        build_ext.run(self)
+        if os.path.exists(jq_lib_dir):
+            shutil.rmtree(jq_lib_dir)
+        tarfile.open(tarball_path, "r:gz").extractall(path_in_dir("."))
 
 
 jq_extension = Extension(
