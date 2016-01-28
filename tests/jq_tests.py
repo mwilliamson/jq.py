@@ -24,6 +24,14 @@ def can_add_one_to_each_element_of_an_array():
 
 
 @istest
+def can_use_regexes():
+    assert_equal(
+        True,
+        jq('test(".*")').transform("42")
+    )
+
+
+@istest
 def input_string_is_parsed_to_json_if_raw_input_is_true():
     assert_equal(
         42,

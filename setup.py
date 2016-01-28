@@ -31,10 +31,27 @@ def read(fname):
 jq_lib_tarball_path = path_in_dir("_jq-lib-1.5.tar.gz")
 jq_lib_dir = path_in_dir("jq-jq-1.5")
 
+oniguruma_lib_tarball_path = path_in_dir("_onig-5.9.6.tar.gz")
+oniguruma_lib_build_dir = path_in_dir("onig-5.9.6")
+oniguruma_lib_install_dir = path_in_dir("onig-install-5.9.6")
+
 class jq_build_ext(build_ext):
     def run(self):
+        self._build_oniguruma()
         self._build_libjq()
         build_ext.run(self)
+    
+    def _build_oniguruma(self):
+        self._build_lib(
+            source_url="https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz",
+            tarball_path=oniguruma_lib_tarball_path,
+            lib_dir=oniguruma_lib_build_dir,
+            commands=[
+                ["./configure", "CFLAGS=-fPIC", "--prefix=" + oniguruma_lib_install_dir],
+                ["make"],
+                ["make", "install"],
+            ])
+        
     
     def _build_libjq(self):
         self._build_lib(
@@ -43,7 +60,7 @@ class jq_build_ext(build_ext):
             lib_dir=jq_lib_dir,
             commands=[
                 ["autoreconf", "-i"],
-                ["./configure", "CFLAGS=-fPIC", "--disable-maintainer-mode"],
+                ["./configure", "CFLAGS=-fPIC", "--disable-maintainer-mode", "--with-oniguruma=" + oniguruma_lib_install_dir],
                 ["make"],
             ])
         
@@ -75,7 +92,10 @@ jq_extension = Extension(
     "jq",
     sources=["jq.c"],
     include_dirs=[jq_lib_dir],
-    extra_objects=[os.path.join(jq_lib_dir, ".libs/libjq.a")],
+    extra_objects=[
+        os.path.join(jq_lib_dir, ".libs/libjq.a"),
+        os.path.join(oniguruma_lib_install_dir, "lib/libonig.a"),
+    ],
 )
 
 setup(
