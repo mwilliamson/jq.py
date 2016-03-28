@@ -1,9 +1,8 @@
+sudo: false
 language: python
 python:
-  - "2.7"
+  - "3.5"
 install:
   - "make bootstrap"
-script: make test-all
-notifications:
-  email: false
-
+  - "pip install 'virtualenv<14.0.0' tox"
+script: tox

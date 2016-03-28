@@ -3,10 +3,6 @@
 test: bootstrap
 	_virtualenv/bin/nosetests tests
 
-test-all:
-	_virtualenv/bin/tox
-	make clean
-	
 upload: jq.c
 	python setup.py sdist upload
 	make clean
