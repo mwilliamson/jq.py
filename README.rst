@@ -60,50 +60,48 @@ Once Homebrew is installed, you can install the remaining dependencies with:
 Usage
 -----
 
-A program can be compiled by passing it to ``jq.jq``.
-To apply the program to an input, call the ``transform`` method.
-jq.py expects the value to be valid JSON,
-such as values returned from ``json.load``.
+Call ``jq.compile`` to compile a jq program.
+Call ``.input()`` on the compiled program to supply an input value.
+The input must either be:
+  * a valid JSON value, such as the values returned from ``json.load``
+  * unparsed JSON text passed as the keyword argument ``text``.
+
+Calling ``first()`` on the result will run the program with the given input,
+and return the first output element.
 
 .. code-block:: python
 
-    from jq import jq
+    import jq
 
-    jq(".").transform("42") == "42"
-    jq(".").transform({"a": 1}) == {"a": 1}
+    assert jq.compile(".").input("hello").first() == "hello"
+    assert jq.compile(".").input(text='"hello"').first() == "hello"
+    assert jq.compile("[.[]+1]").input([1, 2, 3]).first() == [2, 3, 4]
+    assert jq.compile(".[]+1").input([1, 2, 3]).first() == 2
 
-If the value is unparsed JSON text, pass it in using the ``text``
-argument:
-
-.. code-block:: python
-
-    jq(".").transform(text="42") == 42
-
-The ``text_output`` argument can be used to serialise the output into
-JSON text:
+Call ``text()`` instead of ``first()`` to serialise the output into JSON text:
 
 .. code-block:: python
 
-    jq(".").transform("42", text_output=True) == '"42"'
+    assert jq.compile(".").input("42").text() == '"42"'
 
-If there are multiple output elements, each element is represented by a
-separate line, irrespective of the value of ``multiple_output``:
-
-.. code-block:: python
-
-    jq(".[]").transform([1, 2, 3], text_output=True) == "1\n2\n3"
-
-If ``multiple_output`` is ``False`` (the default), then the first output
-is used:
+When calling ``text()``, if there are multiple output elements, each element is represented by a separate line:
 
 .. code-block:: python
 
-    jq(".[]+1").transform([1, 2, 3]) == 2
+    assert jq.compile(".[]").input([1, 2, 3]).text() == "1\n2\n3"
 
-If ``multiple_output`` is ``True``, all output elements are returned in
-an array:
+Call ``all()`` to get all of the output elements in a list:
 
 .. code-block:: python
 
-    jq(".[]+1").transform([1, 2, 3], multiple_output=True) == [2, 3, 4]
+    assert jq.compile(".[]+1").input([1, 2, 3]).all() == [2, 3, 4]
 
+Call ``iter()`` to get all of the output elements as an iterator:
+
+.. code-block:: python
+
+    iterator = iter(jq.compile(".[]+1").input([1, 2, 3]))
+    assert next(iterator, None) == 2
+    assert next(iterator, None) == 3
+    assert next(iterator, None) == 4
+    assert next(iterator, None) == None

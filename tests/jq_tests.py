@@ -4,14 +4,14 @@ from __future__ import unicode_literals
 
 from nose.tools import istest, assert_equal, assert_raises
 
-from jq import jq
+import jq
 
 
 @istest
 def output_of_dot_operator_is_input():
     assert_equal(
         "42",
-        jq(".").transform("42")
+        jq.compile(".").input("42").first()
     )
 
 
@@ -19,7 +19,7 @@ def output_of_dot_operator_is_input():
 def can_add_one_to_each_element_of_an_array():
     assert_equal(
         [2, 3, 4],
-        jq("[.[]+1]").transform([1, 2, 3])
+        jq.compile("[.[]+1]").input([1, 2, 3]).first()
     )
 
 
@@ -27,33 +27,33 @@ def can_add_one_to_each_element_of_an_array():
 def can_use_regexes():
     assert_equal(
         True,
-        jq('test(".*")').transform("42")
+        jq.compile('test(".*")').input("42").first()
     )
 
     assert_equal(
         True,
-        jq('test("^[0-9]+$")').transform("42")
+        jq.compile('test("^[0-9]+$")').input("42").first()
     )
 
     assert_equal(
         False,
-        jq('test("^[0-9]+$")').transform("42a")
+        jq.compile('test("^[0-9]+$")').input("42a").first()
     )
 
 
 @istest
-def input_string_is_parsed_to_json_if_raw_input_is_true():
+def when_text_argument_is_used_then_input_is_treated_as_json_text():
     assert_equal(
         42,
-        jq(".").transform(text="42")
+        jq.compile(".").input(text="42").first()
     )
 
 
 @istest
-def output_is_serialised_to_json_string_if_text_output_is_true():
+def when_text_method_is_used_on_result_then_output_is_serialised_to_json_string():
     assert_equal(
         '"42"',
-        jq(".").transform("42", text_output=True)
+        jq.compile(".").input("42").text()
     )
 
 
@@ -61,38 +61,73 @@ def output_is_serialised_to_json_string_if_text_output_is_true():
 def elements_in_text_output_are_separated_by_newlines():
     assert_equal(
         "1\n2\n3",
-        jq(".[]").transform([1, 2, 3], text_output=True)
+        jq.compile(".[]").input([1, 2, 3]).text()
     )
 
 
 @istest
-def first_output_element_is_returned_if_multiple_output_is_false_but_there_are_multiple_output_elements():
+def when_first_method_is_used_on_result_then_first_element_of_result_is_returned():
     assert_equal(
         2,
-        jq(".[]+1").transform([1, 2, 3])
+        jq.compile(".[]+1").input([1, 2, 3]).first()
     )
 
 
 @istest
-def multiple_output_elements_are_returned_if_multiple_output_is_true():
+def when_all_method_is_used_on_result_then_all_elements_are_returned_in_list():
     assert_equal(
         [2, 3, 4],
-        jq(".[]+1").transform([1, 2, 3], multiple_output=True)
+        jq.compile(".[]+1").input([1, 2, 3]).all()
     )
 
 
 @istest
-def multiple_inputs_in_raw_input_are_separated_by_newlines():
+def can_treat_execute_result_as_iterable():
+    iterator = iter(jq.compile(".[]+1").input([1, 2, 3]))
+    assert_equal(2, next(iterator))
+    assert_equal(3, next(iterator))
+    assert_equal(4, next(iterator))
+    assert_equal("end", next(iterator, "end"))
+
+
+@istest
+def can_execute_same_program_again_before_consuming_output_of_first_execution():
+    program = jq.compile(".[]+1")
+    first = iter(program.input([1, 2, 3]))
+    assert_equal(2, next(first))
+    second = iter(program.input([11, 12, 13]))
+    assert_equal(12, next(second))
+    assert_equal(3, next(first))
+    assert_equal(4, next(first))
+    assert_equal(13, next(second))
+    assert_equal(14, next(second))
+
+
+@istest
+def iterators_from_same_program_and_input_are_independent():
+    program_with_input = jq.compile(".[]+1").input([1, 2, 3])
+    first = iter(program_with_input)
+    assert_equal(2, next(first))
+    second = iter(program_with_input)
+    assert_equal(2, next(second))
+    assert_equal(3, next(first))
+    assert_equal(4, next(first))
+    assert_equal(3, next(second))
+    assert_equal(4, next(second))
+
+
+@istest
+def multiple_inputs_in_text_input_are_separated_by_newlines():
     assert_equal(
         [2, 3, 4],
-        jq(".+1").transform(text="1\n2\n3", multiple_output=True)
+        jq.compile(".+1").input(text="1\n2\n3").all()
     )
 
 
 @istest
 def value_error_is_raised_if_program_is_invalid():
     try:
-        jq("!")
+        jq.compile("!")
         assert False, "Expected error"
     except ValueError as error:
         expected_error_str = "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting $end (Unix shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error"
@@ -101,9 +136,9 @@ def value_error_is_raised_if_program_is_invalid():
 
 @istest
 def value_error_is_raised_if_input_cannot_be_processed_by_program():
-    program = jq(".x")
+    program = jq.compile(".x")
     try:
-        program.transform(1)
+        program.input(1).all()
         assert False, "Expected error"
     except ValueError as error:
         expected_error_str = "Cannot index number with string \"x\""
@@ -112,21 +147,21 @@ def value_error_is_raised_if_input_cannot_be_processed_by_program():
 
 @istest
 def errors_do_not_leak_between_transformations():
-    program = jq(".x")
+    program = jq.compile(".x")
     try:
-        program.transform(1)
+        program.input(1).all()
         assert False, "Expected error"
     except ValueError as error:
         pass
 
-    assert_equal(1, program.transform({"x": 1}))
+    assert_equal(1, program.input({"x": 1}).first())
 
 
 @istest
 def value_error_is_raised_if_input_is_not_valid_json():
-    program = jq(".x")
+    program = jq.compile(".x")
     try:
-        program.transform(text="!!")
+        program.input(text="!!").first()
         assert False, "Expected error"
     except ValueError as error:
         expected_error_str = "parse error: Invalid numeric literal at EOF at line 1, column 2"
@@ -137,7 +172,7 @@ def value_error_is_raised_if_input_is_not_valid_json():
 def unicode_strings_can_be_used_as_input():
     assert_equal(
         "‽",
-        jq(".").transform(text='"‽"')
+        jq.compile(".").input(text='"‽"').first()
     )
 
 
@@ -145,5 +180,5 @@ def unicode_strings_can_be_used_as_input():
 def unicode_strings_can_be_used_as_programs():
     assert_equal(
         "Dragon‽",
-        jq('.+"‽"').transform(text='"Dragon"')
+        jq.compile('.+"‽"').input(text='"Dragon"').first()
     )
