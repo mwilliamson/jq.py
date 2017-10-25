@@ -137,3 +137,11 @@ def unicode_strings_can_be_used_as_programs():
         "Dragon‽",
         jq('.+"‽"').transform(text='"Dragon"')
     )
+
+
+@istest
+def compiling_with_args_should_set_predefined_variables():
+    assert_equal(
+        6,
+        jq('$a + $b + .', args={'a': 1, 'b': 2}).transform(3)
+    )

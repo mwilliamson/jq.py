@@ -32,6 +32,8 @@ cdef extern from "jv.h":
     void jv_parser_set_buf(jv_parser*, const char*, int, int)
     jv jv_parser_next(jv_parser*)
 
+    jv jv_parse(const char*)
+
 
 cdef extern from "jq.h":
     ctypedef struct jq_state:
@@ -41,14 +43,14 @@ cdef extern from "jq.h":
         
     jq_state *jq_init()
     void jq_teardown(jq_state **)
-    int jq_compile(jq_state *, const char* str)
+    int jq_compile_args(jq_state *, const char* str, jv)
     void jq_start(jq_state *, jv value, int flags)
     jv jq_next(jq_state *)
     void jq_set_error_cb(jq_state *, jq_err_cb, void *)
     void jq_get_error_cb(jq_state *, jq_err_cb *, void **)
     
 
-def jq(object program):
+def jq(object program, args={}):
     cdef object program_bytes_obj = program.encode("utf8")
     cdef char* program_bytes = program_bytes_obj
     cdef jq_state *jq = jq_init()
@@ -60,7 +62,10 @@ def jq(object program):
     
     jq_set_error_cb(jq, store_error, <void*>error_store)
     
-    cdef int compiled = jq_compile(jq, program_bytes)
+    args_array = [{'name': key, 'value': val} for key, val in args.items()]
+    args_bytes = json.dumps(args_array).encode('utf-8')
+    cdef jv jv_args = jv_parse(args_bytes)
+    cdef int compiled = jq_compile_args(jq, program_bytes, jv_args)
     
     if error_store.has_errors():
         raise ValueError(error_store.error_string())
