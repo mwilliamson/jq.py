@@ -17,7 +17,7 @@ from distutils.extension import Extension
 from distutils.command.build_ext import build_ext
 
 try:
-    from urllib import urlretrieve
+    import urllib2
 except ImportError:
     from urllib.request import urlretrieve
 
@@ -81,8 +81,17 @@ class jq_build_ext(build_ext):
     def _download_tarball(self, source_url, tarball_path):
         if os.path.exists(tarball_path):
             os.unlink(tarball_path)
-        urlretrieve(source_url, tarball_path)
-        
+        pxys = {}
+        if os.environ.get('http_proxy') is not None:
+            pxys['http'] = os.environ.get('http_proxy').replace("http://","").replace("https://","").replace("/","")
+        if os.environ.get('https_proxy') is not None:
+            pxys['https'] = os.environ.get('http_proxy').replace("http://","").replace("https://","").replace("/","")
+        proxy = urllib2.ProxyHandler(pxys)
+        opener = urllib2.build_opener(proxy)
+        urllib2.install_opener(opener)
+        with open(tarball_path,'wb') as f:
+            f.write(urllib2.urlopen(source_url).read())
+            f.close()
         if os.path.exists(jq_lib_dir):
             shutil.rmtree(jq_lib_dir)
         tarfile.open(tarball_path, "r:gz").extractall(path_in_dir("."))
