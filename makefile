@@ -1,3 +1,8 @@
+#
+# Updated cython version to 0.29.16, the make was failing
+# using the version it was previously pinned on, even on
+# x86_64
+#
 .PHONY: test test-all upload register clean bootstrap
 
 test: bootstrap
@@ -27,5 +32,5 @@ _virtualenv:
 	_virtualenv/bin/pip install --upgrade setuptools
 
 jq.c: _virtualenv jq.pyx
-	_virtualenv/bin/pip install cython==0.19.2
+	_virtualenv/bin/pip install cython==0.29.16
 	_virtualenv/bin/cython jq.pyx
