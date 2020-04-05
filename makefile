@@ -11,14 +11,14 @@ test: bootstrap
 upload: jq.c
 	python setup.py sdist upload
 	make clean
-	
+
 register:
 	python setup.py register
 
 clean:
-	rm -f MANIFEST
-	rm -rf dist
-	
+	rm -f MANIFEST *gz
+	rm -rf dist jq-jq-* *.egg-info
+
 bootstrap: _virtualenv jq.c
 	_virtualenv/bin/pip install -e .
 ifneq ($(wildcard test-requirements.txt),) 
