@@ -64,7 +64,7 @@ class jq_build_ext(_build_ext):
             tarball_path=oniguruma_lib_tarball_path,
             lib_dir=oniguruma_lib_build_dir,
             commands=[
-                ["autoreconf", "-i", "-f", "-W", "none"],
+#                ["autoreconf", "-i", "-f", "-W", "none"],
                 ["./configure", "CFLAGS=-fPIC", "--prefix=" + oniguruma_lib_install_dir],
                 ["make"],
                 ["make", "install"],
