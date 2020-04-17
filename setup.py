@@ -6,11 +6,7 @@ import subprocess
 import tarfile
 import shutil
 
-try:
-    import sysconfig
-except ImportError:
-    # Python 2.6
-    from distutils import sysconfig
+import sysconfig
 
 from setuptools import setup
 from distutils.extension import Extension
@@ -40,7 +36,7 @@ class jq_build_ext(build_ext):
         self._build_oniguruma()
         self._build_libjq()
         build_ext.run(self)
-    
+
     def _build_oniguruma(self):
         self._build_lib(
             source_url="https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz",
@@ -51,8 +47,8 @@ class jq_build_ext(build_ext):
                 ["make"],
                 ["make", "install"],
             ])
-        
-    
+
+
     def _build_libjq(self):
         self._build_lib(
             source_url="https://github.com/stedolan/jq/archive/jq-1.5.tar.gz",
@@ -63,7 +59,7 @@ class jq_build_ext(build_ext):
                 ["./configure", "CFLAGS=-fPIC", "--disable-maintainer-mode", "--with-oniguruma=" + oniguruma_lib_install_dir],
                 ["make"],
             ])
-        
+
     def _build_lib(self, source_url, tarball_path, lib_dir, commands):
         self._download_tarball(source_url, tarball_path)
 
@@ -74,15 +70,15 @@ class jq_build_ext(build_ext):
         def run_command(args):
             print("Executing: %s" % ' '.join(args))
             subprocess.check_call(args, cwd=lib_dir)
-            
+
         for command in commands:
             run_command(command)
-    
+
     def _download_tarball(self, source_url, tarball_path):
         if os.path.exists(tarball_path):
             os.unlink(tarball_path)
         urlretrieve(source_url, tarball_path)
-        
+
         if os.path.exists(jq_lib_dir):
             shutil.rmtree(jq_lib_dir)
         tarfile.open(tarball_path, "r:gz").extractall(path_in_dir("."))
@@ -105,6 +101,7 @@ setup(
     long_description=read("README.rst"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/jq.py',
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     license='BSD 2-Clause',
     ext_modules = [jq_extension],
     cmdclass={"build_ext": jq_build_ext},

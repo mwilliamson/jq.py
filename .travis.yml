@@ -1,8 +1,14 @@
-sudo: false
 language: python
 python:
+  - "2.7"
+  - "3.4"
   - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
+  - "pypy"
+  - "pypy3"
 install:
-  - "make bootstrap"
-  - "pip install 'virtualenv<14.0.0' tox"
-script: tox
+  - "make jq.c"
+  - "pip install tox"
+script: tox -e py
