@@ -7,12 +7,15 @@ This project contains Python bindings for
 Installation
 ------------
 
+**These docs are for the development version of jq.
+Feedback on the new API would be much appreciated!**
+
 Wheels are built for various Python versions and architectures on Linux and Mac OS X.
 On these platforms, you should be able to install jq with a normal pip install:
 
 .. code-block:: sh
 
-    pip install jq
+    pip install jq --pre
 
 If a wheel is not available,
 the source for jq 1.5 is downloaded over HTTPS and built.
