@@ -70,7 +70,11 @@ class jq_build_ext(build_ext):
             ])
 
     def _build_lib(self, source_url, tarball_path, lib_dir, commands):
-        self._download_tarball(source_url, tarball_path)
+        self._download_tarball(
+            source_url=source_url,
+            tarball_path=tarball_path,
+            lib_dir=lib_dir,
+        )
 
         macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
         if macosx_deployment_target:
@@ -83,15 +87,15 @@ class jq_build_ext(build_ext):
         for command in commands:
             run_command(command)
 
-    def _download_tarball(self, source_url, tarball_path):
+    def _download_tarball(self, source_url, tarball_path, lib_dir):
         if os.path.exists(tarball_path):
             os.unlink(tarball_path)
         print("Downloading {}".format(source_url))
         urlretrieve(source_url, tarball_path)
         print("Downloaded {}".format(source_url))
 
-        if os.path.exists(jq_lib_dir):
-            shutil.rmtree(jq_lib_dir)
+        if os.path.exists(lib_dir):
+            shutil.rmtree(lib_dir)
         tarfile.open(tarball_path, "r:gz").extractall(dependency_path("."))
 
 
