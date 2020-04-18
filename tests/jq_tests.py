@@ -30,6 +30,16 @@ def can_use_regexes():
         jq('test(".*")').transform("42")
     )
 
+    assert_equal(
+        True,
+        jq('test("^[0-9]+$")').transform("42")
+    )
+
+    assert_equal(
+        False,
+        jq('test("^[0-9]+$")').transform("42a")
+    )
+
 
 @istest
 def input_string_is_parsed_to_json_if_raw_input_is_true():
@@ -108,7 +118,7 @@ def errors_do_not_leak_between_transformations():
         assert False, "Expected error"
     except ValueError as error:
         pass
-    
+
     assert_equal(1, program.transform({"x": 1}))
 
 
