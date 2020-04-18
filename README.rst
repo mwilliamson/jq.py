@@ -109,3 +109,10 @@ Call ``iter()`` to get all of the output elements as an iterator:
     assert next(iterator, None) == 3
     assert next(iterator, None) == 4
     assert next(iterator, None) == None
+
+The original program string is available on a compiled program as the ``program_string`` attribute:
+
+.. code-block:: python
+
+    program = jq.compile(".")
+    assert program.program_string == "."
