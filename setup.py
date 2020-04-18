@@ -110,7 +110,7 @@ jq_extension = Extension(
 
 setup(
     name='jq',
-    version='1.0.0a2',
+    version='1.0.0a3',
     description='jq is a lightweight and flexible JSON processor.',
     long_description=read("README.rst"),
     author='Michael Williamson',
