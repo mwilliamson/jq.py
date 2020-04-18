@@ -189,3 +189,9 @@ def repr_of_compile_result_is_compilation_string():
     program = jq.compile(".")
     repr_string = repr(program)
     assert_equal("jq.compile({!r})".format("."), repr_string)
+
+
+@istest
+def program_string_can_be_retrieved_from_program():
+    program = jq.compile(".")
+    assert_equal(".", program.program_string)
