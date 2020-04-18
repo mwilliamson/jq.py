@@ -11,7 +11,8 @@ python:
 
 jobs:
   include:
-    - services:
+    - name: "Linux wheels"
+      services:
         - "docker"
       python: "3.8"
       install:
