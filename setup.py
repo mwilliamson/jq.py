@@ -5,17 +5,20 @@ import platform
 import subprocess
 import tarfile
 import shutil
-
 import sysconfig
 
+import requests
 from setuptools import setup
-from setuptools.extension import Extension
 from setuptools.command.build_ext import build_ext
+from setuptools.extension import Extension
 
-try:
-    from urllib import urlretrieve
-except ImportError:
-    from urllib.request import urlretrieve
+
+def urlretrieve(source_url, destination_path):
+    response = requests.get(source_url, stream=True)
+
+    with open(destination_path, "wb") as fileobj:
+        for chunk in response.iter_content(chunk_size=128):
+            fileobj.write(chunk)
 
 def path_in_dir(relative_path):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), relative_path))
@@ -77,7 +80,9 @@ class jq_build_ext(build_ext):
     def _download_tarball(self, source_url, tarball_path):
         if os.path.exists(tarball_path):
             os.unlink(tarball_path)
+        print("Downloading {}".format(source_url))
         urlretrieve(source_url, tarball_path)
+        print("Downloaded {}".format(source_url))
 
         if os.path.exists(jq_lib_dir):
             shutil.rmtree(jq_lib_dir)
