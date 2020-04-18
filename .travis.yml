@@ -16,21 +16,22 @@ jobs:
         - "docker"
       python: "3.8"
       install:
+        - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv
         - "make jq.c"
-        - python3 -m pip install cibuildwheel==1.3.0
       script:
         - python3 -m cibuildwheel --output-dir wheelhouse
+        - twine check wheelhouse/*
 
     - name: "OS X wheels"
       os: osx
       osx_image: xcode11.2
       language: "shell"
       install:
-        - "pip install virtualenv"
+        - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv
         - "make jq.c"
-        - python3 -m pip install cibuildwheel==1.3.0
       script:
         - python3 -m cibuildwheel --output-dir wheelhouse
+        - twine check wheelhouse/*
 
 install:
   - "make jq.c"
