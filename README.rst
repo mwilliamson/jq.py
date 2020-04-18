@@ -66,8 +66,9 @@ Usage
 Call ``jq.compile`` to compile a jq program.
 Call ``.input()`` on the compiled program to supply an input value.
 The input must either be:
-  * a valid JSON value, such as the values returned from ``json.load``
-  * unparsed JSON text passed as the keyword argument ``text``.
+
+* a valid JSON value, such as the values returned from ``json.load``
+* unparsed JSON text passed as the keyword argument ``text``.
 
 Calling ``first()`` on the result will run the program with the given input,
 and return the first output element.
