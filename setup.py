@@ -14,6 +14,8 @@ from setuptools.extension import Extension
 
 def urlretrieve(source_url, destination_path):
     response = requests.get(source_url, stream=True)
+    if response.status_code != 200:
+        raise Exception("status code was: {}".format(response.status_code))
 
     with open(destination_path, "wb") as fileobj:
         for chunk in response.iter_content(chunk_size=128):
