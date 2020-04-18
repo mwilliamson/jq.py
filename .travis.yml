@@ -24,7 +24,7 @@ jobs:
         - export CIBW_TEST_COMMAND="nosetests {project}/tests"
         - python3 -m cibuildwheel --output-dir wheelhouse
         - twine check wheelhouse/*
-        - twine upload wheelhouse/*.whl
+        - twine upload wheelhouse/*.whl --skip-existing
 
     - if: tag =~ /^([0-9]+\.[0-9]+\.[0-9]+)(\.?(dev|a|b|rc)[0-9]+)?$/
       name: "OS X wheels"
@@ -39,7 +39,7 @@ jobs:
         - export CIBW_TEST_COMMAND="nosetests {project}/tests"
         - python3 -m cibuildwheel --output-dir wheelhouse
         - twine check wheelhouse/*
-        - twine upload wheelhouse/*.whl
+        - twine upload wheelhouse/*.whl --skip-existing
 
 env:
   global:
