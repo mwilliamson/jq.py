@@ -8,6 +8,18 @@ python:
   - "3.8"
   - "pypy"
   - "pypy3"
+
+jobs:
+  include:
+    - services:
+        - "docker"
+      python: "3.8"
+      install:
+        - "make jq.c"
+        - python3 -m pip install cibuildwheel==1.3.0
+      script:
+        - python3 -m cibuildwheel --output-dir wheelhouse
+
 install:
   - "make jq.c"
   - "pip install tox"
