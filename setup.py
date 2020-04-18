@@ -23,20 +23,25 @@ def urlretrieve(source_url, destination_path):
 def path_in_dir(relative_path):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), relative_path))
 
+def dependency_path(relative_path):
+    return os.path.join(path_in_dir("_deps"), relative_path)
+
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-jq_lib_tarball_path = path_in_dir("_jq-lib-1.5.tar.gz")
-jq_lib_dir = path_in_dir("jq-jq-1.5")
+jq_lib_tarball_path = dependency_path("jq-lib-1.5.tar.gz")
+jq_lib_dir = dependency_path("jq-jq-1.5")
 
 oniguruma_version = "6.9.4"
-oniguruma_lib_tarball_path = path_in_dir("_onig-{}.tar.gz".format(oniguruma_version))
-oniguruma_lib_build_dir = path_in_dir("onig-{}".format(oniguruma_version))
-oniguruma_lib_install_dir = path_in_dir("onig-install-{}".format(oniguruma_version))
+oniguruma_lib_tarball_path = dependency_path("onig-{}.tar.gz".format(oniguruma_version))
+oniguruma_lib_build_dir = dependency_path("onig-{}".format(oniguruma_version))
+oniguruma_lib_install_dir = dependency_path("onig-install-{}".format(oniguruma_version))
 
 class jq_build_ext(build_ext):
     def run(self):
+        if not os.path.exists(dependency_path(".")):
+            os.makedirs(dependency_path("."))
         self._build_oniguruma()
         self._build_libjq()
         build_ext.run(self)
@@ -87,7 +92,7 @@ class jq_build_ext(build_ext):
 
         if os.path.exists(jq_lib_dir):
             shutil.rmtree(jq_lib_dir)
-        tarfile.open(tarball_path, "r:gz").extractall(path_in_dir("."))
+        tarfile.open(tarball_path, "r:gz").extractall(dependency_path("."))
 
 
 jq_extension = Extension(

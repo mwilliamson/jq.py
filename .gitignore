@@ -5,9 +5,4 @@
 /jq.so
 /.tox
 /*.egg-info
-/_jq-lib
-/jq-jq-1.5
-/_jq-lib-1.5.tar.gz
-/_onig-5.9.6.tar.gz
-/onig-5.9.6/
-/onig-install-5.9.6/
+/_deps
