@@ -131,6 +131,9 @@ cdef class _Program(object):
         program_with_input._bytes_input = string_input.encode("utf8")
         return program_with_input
 
+    def __repr__(self):
+        return "jq.compile({!r})".format(self._program_bytes.decode("utf8"))
+
 
 cdef class _ProgramWithInput(object):
     cdef object _program_bytes

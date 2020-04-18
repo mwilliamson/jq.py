@@ -182,3 +182,10 @@ def unicode_strings_can_be_used_as_programs():
         "Dragon‽",
         jq.compile('.+"‽"').input(text='"Dragon"').first()
     )
+
+
+@istest
+def repr_of_compile_result_is_compilation_string():
+    program = jq.compile(".")
+    repr_string = repr(program)
+    assert_equal("jq.compile({!r})".format("."), repr_string)
