@@ -71,7 +71,7 @@ cdef jq_state* _compile(object program_bytes) except NULL:
         error_store = _ErrorStore.__new__(_ErrorStore)
         error_store.clear()
 
-        jq_set_error_cb(jq, store_error, <void*>error_store)
+        jq_set_error_cb(jq, _store_error, <void*>error_store)
 
         compiled = jq_compile(jq, program_bytes)
 
@@ -88,7 +88,7 @@ cdef jq_state* _compile(object program_bytes) except NULL:
     return jq
 
 
-cdef void store_error(void* store_ptr, jv error):
+cdef void _store_error(void* store_ptr, jv error):
     # TODO: handle errors not of JV_KIND_STRING
     cdef _ErrorStore store = <_ErrorStore>store_ptr
     if jv_get_kind(error) == JV_KIND_STRING:
@@ -113,10 +113,10 @@ cdef class _ErrorStore(object):
         self._errors = []
 
 
-class EmptyValue(object):
+class _EmptyValue(object):
     pass
 
-_NO_VALUE = EmptyValue()
+_NO_VALUE = _EmptyValue()
 
 cdef class _Program(object):
     cdef object _program_bytes
