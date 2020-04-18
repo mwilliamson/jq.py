@@ -9,8 +9,8 @@ import shutil
 import sysconfig
 
 from setuptools import setup
-from distutils.extension import Extension
-from distutils.command.build_ext import build_ext
+from setuptools.extension import Extension
+from setuptools.command.build_ext import build_ext
 
 try:
     from urllib import urlretrieve
