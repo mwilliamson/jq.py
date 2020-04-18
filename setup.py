@@ -30,9 +30,10 @@ def read(fname):
 jq_lib_tarball_path = path_in_dir("_jq-lib-1.5.tar.gz")
 jq_lib_dir = path_in_dir("jq-jq-1.5")
 
-oniguruma_lib_tarball_path = path_in_dir("_onig-5.9.6.tar.gz")
-oniguruma_lib_build_dir = path_in_dir("onig-5.9.6")
-oniguruma_lib_install_dir = path_in_dir("onig-install-5.9.6")
+oniguruma_version = "6.9.4"
+oniguruma_lib_tarball_path = path_in_dir("_onig-{}.tar.gz".format(oniguruma_version))
+oniguruma_lib_build_dir = path_in_dir("onig-{}".format(oniguruma_version))
+oniguruma_lib_install_dir = path_in_dir("onig-install-{}".format(oniguruma_version))
 
 class jq_build_ext(build_ext):
     def run(self):
@@ -42,7 +43,7 @@ class jq_build_ext(build_ext):
 
     def _build_oniguruma(self):
         self._build_lib(
-            source_url="https://github.com/kkos/oniguruma/releases/download/v5.9.6/onig-5.9.6.tar.gz",
+            source_url="https://github.com/kkos/oniguruma/releases/download/v{0}/onig-{0}.tar.gz".format(oniguruma_version),
             tarball_path=oniguruma_lib_tarball_path,
             lib_dir=oniguruma_lib_build_dir,
             commands=[
