@@ -138,6 +138,16 @@ cdef class _Program(object):
     def __repr__(self):
         return "jq.compile({!r})".format(self.program_string)
 
+    # Support the 0.1.x API for backwards compatibility
+    def transform(self, value=_NO_VALUE, text=_NO_VALUE, text_output=False, multiple_output=False):
+        program_with_input = self.input(value, text=text)
+        if text_output:
+            return program_with_input.text()
+        elif multiple_output:
+            return program_with_input.all()
+        else:
+            return program_with_input.first()
+
 
 cdef class _ProgramWithInput(object):
     cdef object _program_bytes
@@ -226,3 +236,8 @@ cdef class _ResultIterator(object):
             raise ValueError(u"parse error: " + message)
         else:
             raise StopIteration()
+
+
+# Support the 0.1.x API for backwards compatibility
+def jq(object program):
+    return compile(program)
