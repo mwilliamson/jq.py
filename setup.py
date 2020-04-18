@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import platform
 import subprocess
 import tarfile
 import shutil
