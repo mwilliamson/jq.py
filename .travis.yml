@@ -24,6 +24,7 @@ jobs:
         - export CIBW_TEST_COMMAND="nosetests {project}/tests"
         - python3 -m cibuildwheel --output-dir wheelhouse
         - twine check wheelhouse/*
+        - twine upload wheelhouse/*.whl
 
     - if: tag =~ /^([0-9]+\.[0-9]+\.[0-9]+)(\.(dev|a|b|rc)[0-9]+)?$/
       name: "OS X wheels"
@@ -38,6 +39,12 @@ jobs:
         - export CIBW_TEST_COMMAND="nosetests {project}/tests"
         - python3 -m cibuildwheel --output-dir wheelhouse
         - twine check wheelhouse/*
+        - twine upload wheelhouse/*.whl
+
+env:
+  global:
+    - TWINE_USERNAME=__token__
+    # Note: TWINE_PASSWORD is set to a PyPI API token in Travis settings
 
 install:
   - "make jq.c"
