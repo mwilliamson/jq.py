@@ -31,8 +31,8 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-jq_lib_tarball_path = dependency_path("jq-lib-1.5.tar.gz")
-jq_lib_dir = dependency_path("jq-jq-1.5")
+jq_lib_tarball_path = dependency_path("jq-lib-1.6.tar.gz")
+jq_lib_dir = dependency_path("jq-1.6")
 
 oniguruma_version = "6.9.4"
 oniguruma_lib_tarball_path = dependency_path("onig-{}.tar.gz".format(oniguruma_version))
@@ -61,7 +61,7 @@ class jq_build_ext(build_ext):
 
     def _build_libjq(self):
         self._build_lib(
-            source_url="https://github.com/stedolan/jq/archive/jq-1.5.tar.gz",
+            source_url="https://github.com/stedolan/jq/releases/download/jq-1.6/jq-1.6.tar.gz",
             tarball_path=jq_lib_tarball_path,
             lib_dir=jq_lib_dir,
             commands=[
@@ -103,7 +103,7 @@ class jq_build_ext(build_ext):
 jq_extension = Extension(
     "jq",
     sources=["jq.c"],
-    include_dirs=[jq_lib_dir],
+    include_dirs=[os.path.join(jq_lib_dir, "src")],
     extra_objects=[
         os.path.join(jq_lib_dir, ".libs/libjq.a"),
         os.path.join(oniguruma_lib_install_dir, "lib/libonig.a"),

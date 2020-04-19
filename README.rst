@@ -18,7 +18,7 @@ On these platforms, you should be able to install jq with a normal pip install:
     pip install jq --pre
 
 If a wheel is not available,
-the source for jq 1.5 is downloaded over HTTPS and built.
+the source for jq 1.6 is downloaded over HTTPS and built.
 Therefore, installation requires any programs required to build jq.
 This includes:
 
