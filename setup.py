@@ -122,7 +122,7 @@ setup(
     ext_modules = [jq_extension],
     cmdclass={"build_ext": jq_build_ext},
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
