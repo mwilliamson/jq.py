@@ -20,6 +20,7 @@ jobs:
         - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv
         - "make jq.c"
       script:
+        - export CIBW_BEFORE_BUILD="pip install cython==0.29.16 && cython jq.pyx"
         - export CIBW_TEST_REQUIRES="-r test-requirements.txt"
         - export CIBW_TEST_COMMAND="nosetests {project}/tests"
         - python3 -m cibuildwheel --output-dir wheelhouse &&
@@ -35,6 +36,7 @@ jobs:
         - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv
         - "make jq.c"
       script:
+        - export CIBW_BEFORE_BUILD="pip install cython==0.29.16 && cython jq.pyx"
         - export CIBW_TEST_REQUIRES="-r test-requirements.txt"
         - export CIBW_TEST_COMMAND="nosetests {project}/tests"
         - python3 -m cibuildwheel --output-dir wheelhouse &&
