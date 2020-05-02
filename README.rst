@@ -110,6 +110,16 @@ Call ``iter()`` to get all of the output elements as an iterator:
     assert next(iterator, None) == 4
     assert next(iterator, None) == None
 
+Convenience functions are available to get the output for a program and input in one call:
+
+.. code-block:: python
+
+    assert jq.first(".[] + 1", [1, 2, 3]) == 2
+    assert jq.first(".[] + 1", text="[1, 2, 3]") == 2
+    assert jq.text(".[] + 1", [1, 2, 3]) == "2\n3\n4"
+    assert jq.all(".[] + 1", [1, 2, 3]) == [2, 3, 4]
+    assert list(jq.iter(".[] + 1", [1, 2, 3])) == [2, 3, 4]
+
 The original program string is available on a compiled program as the ``program_string`` attribute:
 
 .. code-block:: python

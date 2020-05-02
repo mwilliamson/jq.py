@@ -174,7 +174,7 @@ cdef class _ProgramWithInput(object):
         return list(self)
 
     def first(self):
-        return next(iter(self))
+        return next(_iter(self))
 
 
 cdef class _ResultIterator(object):
@@ -236,6 +236,25 @@ cdef class _ResultIterator(object):
             raise ValueError(u"parse error: " + message)
         else:
             raise StopIteration()
+
+
+def all(program, value=_NO_VALUE, text=_NO_VALUE):
+    return compile(program).input(value, text=text).all()
+
+
+def first(program, value=_NO_VALUE, text=_NO_VALUE):
+    return compile(program).input(value, text=text).first()
+
+
+_iter = iter
+
+
+def iter(program, value=_NO_VALUE, text=_NO_VALUE):
+    return _iter(compile(program).input(value, text=text))
+
+
+def text(program, value=_NO_VALUE, text=_NO_VALUE):
+    return compile(program).input(value, text=text).text()
 
 
 # Support the 0.1.x API for backwards compatibility

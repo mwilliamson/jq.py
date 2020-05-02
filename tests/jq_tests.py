@@ -195,3 +195,60 @@ def repr_of_compile_result_is_compilation_string():
 def program_string_can_be_retrieved_from_program():
     program = jq.compile(".")
     assert_equal(".", program.program_string)
+
+
+@istest
+class ConvenienceFunctions(object):
+    @istest
+    def first_function_with_json_value_input_returns_first_output_element(self):
+        output = jq.first(".[] + 1", [1, 2, 3])
+
+        assert_equal(2, output)
+
+    @istest
+    def first_function_with_json_text_input_returns_first_output_element(self):
+        output = jq.first(".[] + 1", text="[1, 2, 3]")
+
+        assert_equal(2, output)
+
+    @istest
+    def text_function_with_json_value_input_returns_all_output_elements_as_string(self):
+        output = jq.text(".[] + 1", [1, 2, 3])
+
+        assert_equal("2\n3\n4", output)
+
+    @istest
+    def text_function_with_json_text_input_returns_all_output_elements_as_string(self):
+        output = jq.text(".[] + 1", text="[1, 2, 3]")
+
+        assert_equal("2\n3\n4", output)
+
+    @istest
+    def all_function_with_json_value_input_returns_all_output_elements_in_list(self):
+        output = jq.all(".[] + 1", [1, 2, 3])
+
+        assert_equal([2, 3, 4], output)
+
+    @istest
+    def all_function_with_json_text_input_returns_all_output_element_in_list(self):
+        output = jq.all(".[] + 1", text="[1, 2, 3]")
+
+        assert_equal([2, 3, 4], output)
+
+    @istest
+    def iter_function_with_json_value_input_returns_all_output_elements_in_iterator(self):
+        iterator = jq.iter(".[] + 1", [1, 2, 3])
+
+        assert_equal(2, next(iterator))
+        assert_equal(3, next(iterator))
+        assert_equal(4, next(iterator))
+        assert_equal("end", next(iterator, "end"))
+
+    @istest
+    def iter_function_with_json_text_input_returns_all_output_element_in_iterator(self):
+        iterator = jq.iter(".[] + 1", text="[1, 2, 3]")
+
+        assert_equal(2, next(iterator))
+        assert_equal(3, next(iterator))
+        assert_equal(4, next(iterator))
+        assert_equal("end", next(iterator, "end"))
