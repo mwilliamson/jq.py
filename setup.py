@@ -104,6 +104,7 @@ jq_extension = Extension(
     "jq",
     sources=["jq.c"],
     include_dirs=[os.path.join(jq_lib_dir, "src")],
+    extra_link_args=["-lm"],
     extra_objects=[
         os.path.join(jq_lib_dir, ".libs/libjq.a"),
         os.path.join(oniguruma_lib_install_dir, "lib/libonig.a"),
