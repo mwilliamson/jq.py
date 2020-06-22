@@ -52,9 +52,6 @@ cdef extern from "jq.h":
 
 def compile(object program):
     cdef object program_bytes = program.encode("utf8")
-    cdef jq_state* state = _compile(program_bytes)
-    jq_teardown(&state)
-
     return _Program(program_bytes)
 
 
@@ -118,18 +115,47 @@ class _EmptyValue(object):
 
 _NO_VALUE = _EmptyValue()
 
-cdef class _Program(object):
+
+cdef class _JqStatePool(object):
+    cdef jq_state* _jq_state
     cdef object _program_bytes
 
     def __cinit__(self, program_bytes):
         self._program_bytes = program_bytes
+        self._jq_state = _compile(self._program_bytes)
+
+    def __dealloc__(self):
+        jq_teardown(&self._jq_state)
+
+    cdef jq_state* acquire(self):
+        if self._jq_state == NULL:
+            return _compile(self._program_bytes)
+        else:
+            state = self._jq_state
+            self._jq_state = NULL
+            return state
+
+    cdef void release(self, jq_state* state):
+        if self._jq_state == NULL:
+            self._jq_state = state
+        else:
+            jq_teardown(&state)
+
+
+cdef class _Program(object):
+    cdef object _program_bytes
+    cdef _JqStatePool _jq_state_pool
+
+    def __cinit__(self, program_bytes):
+        self._program_bytes = program_bytes
+        self._jq_state_pool = _JqStatePool(program_bytes)
 
     def input(self, value=_NO_VALUE, text=_NO_VALUE):
         if (value is _NO_VALUE) == (text is _NO_VALUE):
             raise ValueError("Either the value or text argument should be set")
         string_input = text if text is not _NO_VALUE else json.dumps(value)
 
-        return _ProgramWithInput(self._program_bytes, string_input.encode("utf8"))
+        return _ProgramWithInput(self._jq_state_pool, string_input.encode("utf8"))
 
     @property
     def program_string(self):
@@ -150,18 +176,18 @@ cdef class _Program(object):
 
 
 cdef class _ProgramWithInput(object):
-    cdef object _program_bytes
+    cdef _JqStatePool _jq_state_pool
     cdef object _bytes_input
 
-    def __cinit__(self, program_bytes, bytes_input):
-        self._program_bytes = program_bytes
+    def __cinit__(self, jq_state_pool, bytes_input):
+        self._jq_state_pool = jq_state_pool
         self._bytes_input = bytes_input
 
     def __iter__(self):
         return self._make_iterator()
 
     cdef _ResultIterator _make_iterator(self):
-        return _ResultIterator(self._program_bytes, self._bytes_input)
+        return _ResultIterator(self._jq_state_pool, self._bytes_input)
 
     def text(self):
         iterator = self._make_iterator()
@@ -180,17 +206,19 @@ cdef class _ProgramWithInput(object):
 
 
 cdef class _ResultIterator(object):
+    cdef _JqStatePool _jq_state_pool
     cdef jq_state* _jq
     cdef jv_parser* _parser
     cdef object _bytes_input
     cdef bint _ready
 
     def __dealloc__(self):
-        jq_teardown(&self._jq)
+        self._jq_state_pool.release(self._jq)
         jv_parser_free(self._parser)
 
-    def __cinit__(self, object program_bytes, object bytes_input):
-        self._jq = _compile(program_bytes)
+    def __cinit__(self, _JqStatePool jq_state_pool, object bytes_input):
+        self._jq_state_pool = jq_state_pool
+        self._jq = jq_state_pool.acquire()
         self._bytes_input = bytes_input
         self._ready = False
         cdef jv_parser* parser = jv_parser_new(0)
