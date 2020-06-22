@@ -55,9 +55,7 @@ def compile(object program):
     cdef jq_state* state = _compile(program_bytes)
     jq_teardown(&state)
 
-    cdef _Program wrapped_program = _Program.__new__(_Program)
-    wrapped_program._program_bytes = program_bytes
-    return wrapped_program
+    return _Program(program_bytes)
 
 
 cdef jq_state* _compile(object program_bytes) except NULL:
@@ -68,8 +66,7 @@ cdef jq_state* _compile(object program_bytes) except NULL:
         if not jq:
             raise Exception("jq_init failed")
 
-        error_store = _ErrorStore.__new__(_ErrorStore)
-        error_store.clear()
+        error_store = _ErrorStore()
 
         jq_set_error_cb(jq, _store_error, <void*>error_store)
 
@@ -100,6 +97,9 @@ cdef void _store_error(void* store_ptr, jv error):
 cdef class _ErrorStore(object):
     cdef object _errors
 
+    def __cinit__(self):
+        self.clear()
+
     cdef int has_errors(self):
         return len(self._errors)
 
@@ -121,15 +121,15 @@ _NO_VALUE = _EmptyValue()
 cdef class _Program(object):
     cdef object _program_bytes
 
+    def __cinit__(self, program_bytes):
+        self._program_bytes = program_bytes
+
     def input(self, value=_NO_VALUE, text=_NO_VALUE):
         if (value is _NO_VALUE) == (text is _NO_VALUE):
             raise ValueError("Either the value or text argument should be set")
         string_input = text if text is not _NO_VALUE else json.dumps(value)
 
-        cdef _ProgramWithInput program_with_input = _ProgramWithInput.__new__(_ProgramWithInput)
-        program_with_input._program_bytes = self._program_bytes
-        program_with_input._bytes_input = string_input.encode("utf8")
-        return program_with_input
+        return _ProgramWithInput(self._program_bytes, string_input.encode("utf8"))
 
     @property
     def program_string(self):
@@ -153,13 +153,15 @@ cdef class _ProgramWithInput(object):
     cdef object _program_bytes
     cdef object _bytes_input
 
+    def __cinit__(self, program_bytes, bytes_input):
+        self._program_bytes = program_bytes
+        self._bytes_input = bytes_input
+
     def __iter__(self):
         return self._make_iterator()
 
     cdef _ResultIterator _make_iterator(self):
-        iterator = _ResultIterator.__new__(_ResultIterator)
-        iterator._init(self._program_bytes, self._bytes_input)
-        return iterator
+        return _ResultIterator(self._program_bytes, self._bytes_input)
 
     def text(self):
         iterator = self._make_iterator()
@@ -187,7 +189,7 @@ cdef class _ResultIterator(object):
         jq_teardown(&self._jq)
         jv_parser_free(self._parser)
 
-    def _init(self, object program_bytes, object bytes_input):
+    def __cinit__(self, object program_bytes, object bytes_input):
         self._jq = _compile(program_bytes)
         self._bytes_input = bytes_input
         self._ready = False
