@@ -56,6 +56,9 @@ def compile(object program):
     return _Program(program_bytes)
 
 
+_compilation_lock = threading.Lock()
+
+
 cdef jq_state* _compile(object program_bytes) except NULL:
     cdef jq_state *jq = jq_init()
     cdef _ErrorStore error_store
@@ -66,12 +69,13 @@ cdef jq_state* _compile(object program_bytes) except NULL:
 
         error_store = _ErrorStore()
 
-        jq_set_error_cb(jq, _store_error, <void*>error_store)
+        with _compilation_lock:
+            jq_set_error_cb(jq, _store_error, <void*>error_store)
 
-        compiled = jq_compile(jq, program_bytes)
+            compiled = jq_compile(jq, program_bytes)
 
-        if error_store.has_errors():
-            raise ValueError(error_store.error_string())
+            if error_store.has_errors():
+                raise ValueError(error_store.error_string())
 
         if not compiled:
             raise ValueError("program was not valid")
