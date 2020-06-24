@@ -1,4 +1,5 @@
 import json
+import threading
 
 from cpython.bytes cimport PyBytes_AsString
 
@@ -119,27 +120,31 @@ _NO_VALUE = _EmptyValue()
 cdef class _JqStatePool(object):
     cdef jq_state* _jq_state
     cdef object _program_bytes
+    cdef object _lock
 
     def __cinit__(self, program_bytes):
         self._program_bytes = program_bytes
         self._jq_state = _compile(self._program_bytes)
+        self._lock = threading.Lock()
 
     def __dealloc__(self):
         jq_teardown(&self._jq_state)
 
     cdef jq_state* acquire(self):
-        if self._jq_state == NULL:
-            return _compile(self._program_bytes)
-        else:
-            state = self._jq_state
-            self._jq_state = NULL
-            return state
+        with self._lock:
+            if self._jq_state == NULL:
+                return _compile(self._program_bytes)
+            else:
+                state = self._jq_state
+                self._jq_state = NULL
+                return state
 
     cdef void release(self, jq_state* state):
-        if self._jq_state == NULL:
-            self._jq_state = state
-        else:
-            jq_teardown(&state)
+        with self._lock:
+            if self._jq_state == NULL:
+                self._jq_state = state
+            else:
+                jq_teardown(&state)
 
 
 cdef class _Program(object):
