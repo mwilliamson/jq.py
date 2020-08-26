@@ -3,6 +3,8 @@ requires = [
     "setuptools>=43",
     "wheel",
     "requests",
-    "certifi"
+    "certifi",
+    "cython",
+    "zstandard",
 ]
 build-backend = "setuptools.build_meta"

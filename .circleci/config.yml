@@ -1,0 +1,27 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0
+
+
+jobs:
+  build:
+    executor:
+      name: win/default  # executor type
+      size: "medium"
+      shell: cmd.exe
+
+    environment:
+      PYTHON_ZSTANDARD_IMPORT_POLICY: cffi
+      # CIBW_BEFORE_ALL: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+      CIBW_BEFORE_BUILD: "pip install --user --upgrade pip requests zstandard cython"
+      CIBW_BUILD: "cp36-win_amd64 cp37-win_amd64 cp38-win_amd64"
+      CIBW_BUILD_VERBOSITY: "0"
+
+    steps:
+      - checkout
+      - run: del pyproject.toml  # pep517 bug. https://github.com/pypa/pip/pull/6370
+      - run: pip install --user cibuildwheel==1.5.5
+      - run: python -m cibuildwheel --output-dir wheelhouse
+      - store_artifacts:
+          path: wheelhouse/

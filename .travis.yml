@@ -17,11 +17,11 @@ jobs:
         - "docker"
       python: "3.8"
       install:
-        - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv
+        - make jq.c
+        - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv tox
       script:
+        - tox -e py  # TODO: verify if it works here
         - export CIBW_BEFORE_BUILD="pip install cython==0.29.16 && cython {project}/jq.pyx"
-        - export CIBW_TEST_REQUIRES="-r test-requirements.txt"
-        - export CIBW_TEST_COMMAND="nosetests {project}/tests"
         - python3 -m cibuildwheel --output-dir wheelhouse &&
           twine check wheelhouse/*.whl &&
           twine upload wheelhouse/*.whl --skip-existing
@@ -32,21 +32,36 @@ jobs:
       osx_image: xcode11.2
       language: "shell"
       install:
-        - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv
+        - make jq.c
+        - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv tox
       script:
+        - tox -e py
         - export CIBW_BEFORE_BUILD="pip install cython==0.29.16 && cython {project}/jq.pyx"
-        - export CIBW_TEST_REQUIRES="-r test-requirements.txt"
-        - export CIBW_TEST_COMMAND="nosetests {project}/tests"
         - python3 -m cibuildwheel --output-dir wheelhouse &&
           twine check wheelhouse/*.whl &&
           twine upload wheelhouse/*.whl --skip-existing
 
+    name: "Windows"
+    os: windows
+    language: "bash"
+    before_install:
+      - choco install python --version 3.8.0
+      - export PATH="/c/Python38:/c/Python38/Scripts:$PATH"
+    install:
+      - python -m pip install cibuildwheel==1.5.5 twine virtualenv tox zstandard
+      # - tox -e py
+    script:
+      - export CIBW_BUILD="cp36-win_amd64 cp37-win_amd64 cp38-win_amd64"
+      - export CIBW_BEFORE_BUILD="pip install --user --upgrade pip requests zstandard cython"
+      - export CIBW_TEST_REQUIRES="-r test-requirements.txt"
+      - export CIBW_TEST_COMMAND="nosetests {project}/tests"
+      - del pyproject.toml &&
+        python -m cibuildwheel --output-dir wheelhouse &&
+        twine check wheelhouse/*.whl &&
+        twine upload wheelhouse/*.whl --skip-existing
 env:
   global:
-    - TWINE_USERNAME=__token__
     # Note: TWINE_PASSWORD is set to a PyPI API token in Travis settings
-
-install:
-  - "make jq.c"
-  - "pip install tox"
-script: tox -e py
+    - TWINE_USERNAME=__token__
+    - CIBW_TEST_REQUIRES="-r test-requirements.txt"
+    - CIBW_TEST_COMMAND="nosetests {project}/tests"

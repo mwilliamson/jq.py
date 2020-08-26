@@ -5,11 +5,17 @@ import subprocess
 import tarfile
 import shutil
 import sysconfig
+import platform
 
 import requests
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
 from setuptools.extension import Extension
+
+
+if platform.system() == 'Windows':
+    from setup_windows import win_setup
+    raise SystemExit(win_setup())
 
 
 def urlretrieve(source_url, destination_path):
