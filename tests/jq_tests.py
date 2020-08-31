@@ -196,6 +196,87 @@ def program_string_can_be_retrieved_from_program():
     program = jq.compile(".")
     assert_equal(".", program.program_string)
 
+@istest
+def empty_text_iterator_stops():
+    program = jq.compile(".")
+    assert_raises(StopIteration, program.input(text=iter([])).first)
+    assert_raises(StopIteration, program.input(text=iter([""])).first)
+    assert_raises(StopIteration, program.input(text=iter(["", ""])).first)
+
+@istest
+def empty_value_iterator_stops():
+    program = jq.compile(".")
+    assert_raises(StopIteration, program.input(value=iter([])).first)
+
+@istest
+def single_value_iterator_works():
+    program = jq.compile(".")
+    assert_equal(False, program.input(value=iter([False])).first())
+    assert_equal(True, program.input(value=iter([True])).first())
+    assert_equal(42, program.input(value=iter([42])).first())
+    assert_equal(-42, program.input(value=iter([-42])).first())
+    assert_equal("42", program.input(value=iter(["42"])).first())
+    assert_equal([42], program.input(value=iter([[42]])).first())
+    assert_equal(dict(a=42), program.input(value=iter([dict(a=42)])).first())
+
+@istest
+def double_value_iterator_works():
+    program = jq.compile(".")
+    assert_equal([False, True],
+                 program.input(value=iter([False, True])).all())
+    assert_equal([True, False],
+                 program.input(value=iter([True, False])).all())
+    assert_equal([42, 24],
+                 program.input(value=iter([42, 24])).all())
+    assert_equal([-42, -24],
+                 program.input(value=iter([-42, -24])).all())
+    assert_equal(["42", "24"],
+                 program.input(value=iter(["42", "24"])).all())
+    assert_equal([[42], [24]],
+                 program.input(value=iter([[42], [24]])).all())
+    assert_equal([dict(a=42), dict(a=24)],
+                 program.input(value=iter([dict(a=42), dict(a=24)])).all())
+
+@istest
+def single_complete_text_iterator_works():
+    program = jq.compile(".")
+    assert_equal(False, program.input(text=iter(["false"])).first())
+    assert_equal(True, program.input(text=iter(["true"])).first())
+    assert_equal(42, program.input(text=iter(["42"])).first())
+    assert_equal(-42, program.input(text=iter(["-42"])).first())
+    assert_equal("42", program.input(text=iter(['"42"'])).first())
+    assert_equal([42], program.input(text=iter(["[42]"])).first())
+    assert_equal(dict(a=42), program.input(text=iter(['{"a": 42}'])).first())
+
+@istest
+def multi_complete_text_iterator_works():
+    program = jq.compile(".")
+    assert_equal(False, program.input(text=iter(["fa", "lse"])).first())
+    assert_equal(True, program.input(text=iter(["tr", "ue"])).first())
+    assert_equal(42, program.input(text=iter(["4", "2"])).first())
+    assert_equal(-42, program.input(text=iter(["-4", "2"])).first())
+    assert_equal("42", program.input(text=iter(['"4', '2"'])).first())
+    assert_equal([42], program.input(text=iter(["[4", "2]"])).first())
+    assert_equal(dict(a=42), program.input(text=iter(['{"a":', ' 42}'])).first())
+
+@istest
+def single_incomplete_text_iterator_breaks():
+    program = jq.compile(".")
+    assert_raises(ValueError, program.input(text=iter(["fals"])).first)
+    assert_raises(ValueError, program.input(text=iter(["tru"])).first)
+    assert_raises(ValueError, program.input(text=iter(["-"])).first)
+    assert_raises(ValueError, program.input(text=iter(['"42'])).first)
+    assert_raises(ValueError, program.input(text=iter(["[42"])).first)
+    assert_raises(ValueError, program.input(text=iter(['{"a": 42'])).first)
+
+@istest
+def multi_incomplete_text_iterator_breaks():
+    program = jq.compile(".")
+    assert_raises(ValueError, program.input(text=iter(["fa", "ls"])).first)
+    assert_raises(ValueError, program.input(text=iter(["tr", "u"])).first)
+    assert_raises(ValueError, program.input(text=iter(['"4', '2'])).first)
+    assert_raises(ValueError, program.input(text=iter(["[4", "2"])).first)
+    assert_raises(ValueError, program.input(text=iter(['{"a":', ' 42'])).first)
 
 @istest
 class ConvenienceFunctions(object):

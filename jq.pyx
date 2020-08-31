@@ -162,9 +162,7 @@ cdef class _Program(object):
     def input(self, value=_NO_VALUE, text=_NO_VALUE):
         if (value is _NO_VALUE) == (text is _NO_VALUE):
             raise ValueError("Either the value or text argument should be set")
-        string_input = text if text is not _NO_VALUE else json.dumps(value)
-
-        return _ProgramWithInput(self._jq_state_pool, string_input.encode("utf8"))
+        return _ProgramWithInput(self._jq_state_pool, value, text)
 
     @property
     def program_string(self):
@@ -186,17 +184,33 @@ cdef class _Program(object):
 
 cdef class _ProgramWithInput(object):
     cdef _JqStatePool _jq_state_pool
-    cdef object _bytes_input
+    cdef object _value
+    cdef object _text
 
-    def __cinit__(self, jq_state_pool, bytes_input):
+    def __cinit__(self, jq_state_pool, value, text):
+        if (value is _NO_VALUE) == (text is _NO_VALUE):
+            raise ValueError("Either the value or text argument should be set")
         self._jq_state_pool = jq_state_pool
-        self._bytes_input = bytes_input
+        self._value = value
+        self._text = text
 
     def __iter__(self):
         return self._make_iterator()
 
     cdef _ResultIterator _make_iterator(self):
-        return _ResultIterator(self._jq_state_pool, self._bytes_input)
+        if self._text is not _NO_VALUE:
+            if isinstance(self._text, type(u"")):
+                input_iter = _iter((self._text,))
+            else:
+                input_iter = self._text
+        else:
+            if isinstance(self._value,
+                          (type(None), type(u""), bool, int, float,
+                           list, dict)):
+                input_iter = _iter((json.dumps(self._value),))
+            else:
+                input_iter = (json.dumps(v) + "\n" for v in self._value)
+        return _ResultIterator(self._jq_state_pool, input_iter)
 
     def text(self):
         iterator = self._make_iterator()
@@ -218,22 +232,21 @@ cdef class _ResultIterator(object):
     cdef _JqStatePool _jq_state_pool
     cdef jq_state* _jq
     cdef jv_parser* _parser
-    cdef object _bytes_input
-    cdef bint _ready
+    cdef object _input_iter
+    cdef object _input
+    cdef bint _result_ready
 
     def __dealloc__(self):
         self._jq_state_pool.release(self._jq)
         jv_parser_free(self._parser)
 
-    def __cinit__(self, _JqStatePool jq_state_pool, object bytes_input):
+    def __cinit__(self, _JqStatePool jq_state_pool, object input_iter):
         self._jq_state_pool = jq_state_pool
         self._jq = jq_state_pool.acquire()
-        self._bytes_input = bytes_input
-        self._ready = False
-        cdef jv_parser* parser = jv_parser_new(0)
-        cdef char* cbytes_input = PyBytes_AsString(bytes_input)
-        jv_parser_set_buf(parser, cbytes_input, len(cbytes_input), 0)
-        self._parser = parser
+        self._input_iter = input_iter
+        self._input = None
+        self._result_ready = False
+        self._parser = jv_parser_new(0)
 
     def __iter__(self):
         return self
@@ -244,9 +257,9 @@ cdef class _ResultIterator(object):
     cdef unicode _next_string(self):
         cdef int dumpopts = 0
         while True:
-            if not self._ready:
-                self._ready_next_input()
-                self._ready = True
+            if not self._result_ready:
+                self._ready_next_result()
+                self._result_ready = True
 
             result = jq_next(self._jq)
             if jv_is_valid(result):
@@ -260,22 +273,39 @@ cdef class _ResultIterator(object):
                 jv_free(error_message)
                 raise ValueError(message)
             else:
-                self._ready = False
+                self._result_ready = False
+
+    cdef bint _ready_next_result(self) except 1:
+        cdef int jq_flags = 0
+        cdef jv value
+        while True:
+            if self._input is None:
+                self._ready_next_input()
+            value = jv_parser_next(self._parser)
+            if jv_is_valid(value):
+                jq_start(self._jq, value, jq_flags)
+                return 0
+            elif jv_invalid_has_msg(jv_copy(value)):
+                error_message = jv_invalid_get_msg(value)
+                message = jv_string_value(error_message).decode("utf8")
+                jv_free(error_message)
+                raise ValueError(u"parse error: " + message)
+            else:
+                # If we didn't ready any input
+                if self._input is None:
+                    raise StopIteration
+                self._input = None
 
     cdef bint _ready_next_input(self) except 1:
-        cdef int jq_flags = 0
-        cdef jv value = jv_parser_next(self._parser)
-        if jv_is_valid(value):
-            jq_start(self._jq, value, jq_flags)
-            return 0
-        elif jv_invalid_has_msg(jv_copy(value)):
-            error_message = jv_invalid_get_msg(value)
-            message = jv_string_value(error_message).decode("utf8")
-            jv_free(error_message)
-            raise ValueError(u"parse error: " + message)
-        else:
-            raise StopIteration()
-
+        cdef char* cbytes_input
+        try:
+            self._input = next(self._input_iter).encode("utf8")
+            cbytes_input = PyBytes_AsString(self._input)
+            jv_parser_set_buf(self._parser, cbytes_input, len(cbytes_input), 1)
+        except StopIteration:
+            self._input = None
+            jv_parser_set_buf(self._parser, "", 0, 0)
+        return 0
 
 def all(program, value=_NO_VALUE, text=_NO_VALUE):
     return compile(program).input(value, text=text).all()
