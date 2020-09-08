@@ -260,6 +260,7 @@ cdef class _ResultIterator(object):
                 jv_free(error_message)
                 raise ValueError(message)
             else:
+                jv_free(result)
                 self._ready = False
 
     cdef bint _ready_next_input(self) except 1:
@@ -274,6 +275,7 @@ cdef class _ResultIterator(object):
             jv_free(error_message)
             raise ValueError(u"parse error: " + message)
         else:
+            jv_free(value)
             raise StopIteration()
 
 
