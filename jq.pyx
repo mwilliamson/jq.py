@@ -2,6 +2,7 @@ import json
 import threading
 
 from cpython.bytes cimport PyBytes_AsString
+from cpython.bytes cimport PyBytes_AsStringAndSize
 
 
 cdef extern from "jv.h":
@@ -164,10 +165,11 @@ cdef class _JSONParser(object):
 
     cdef bint _ready_next_bytes(self) except 1:
         cdef char* cbytes
+        cdef ssize_t clen
         try:
             self._bytes = next(self._text_iter).encode("utf8")
-            cbytes = PyBytes_AsString(self._bytes)
-            jv_parser_set_buf(self._parser, cbytes, len(cbytes), 1)
+            PyBytes_AsStringAndSize(self._bytes, &cbytes, &clen)
+            jv_parser_set_buf(self._parser, cbytes, clen, 1)
         except StopIteration:
             self._bytes = None
             jv_parser_set_buf(self._parser, "", 0, 0)
@@ -360,8 +362,10 @@ cdef class _ResultIterator(object):
         self._bytes_input = bytes_input
         self._ready = False
         cdef jv_parser* parser = jv_parser_new(0)
-        cdef char* cbytes_input = PyBytes_AsString(bytes_input)
-        jv_parser_set_buf(parser, cbytes_input, len(cbytes_input), 0)
+        cdef char* cbytes_input
+        cdef ssize_t clen_input
+        PyBytes_AsStringAndSize(bytes_input, &cbytes_input, &clen_input)
+        jv_parser_set_buf(parser, cbytes_input, clen_input, 0)
         self._parser = parser
 
     def __iter__(self):
