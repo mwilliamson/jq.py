@@ -3,6 +3,7 @@ import json
 import threading
 
 from cpython.bytes cimport PyBytes_AsString
+from cpython.bytes cimport PyBytes_AsStringAndSize
 from libc.float cimport DBL_MAX
 from libc.math cimport INFINITY, modf
 
@@ -335,8 +336,10 @@ cdef class _ResultIterator(object):
         self._slurp = slurp
         self._ready = False
         cdef jv_parser* parser = jv_parser_new(0)
-        cdef char* cbytes_input = PyBytes_AsString(bytes_input)
-        jv_parser_set_buf(parser, cbytes_input, len(bytes_input), 0)
+        cdef char* cbytes_input
+        cdef ssize_t clen_input
+        PyBytes_AsStringAndSize(bytes_input, &cbytes_input, &clen_input)
+        jv_parser_set_buf(parser, cbytes_input, clen_input, 0)
         self._parser = parser
 
     def __iter__(self):
