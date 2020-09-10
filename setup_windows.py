@@ -3,6 +3,7 @@
 import hashlib
 import io
 import os
+import shutil
 import sys
 import tarfile
 import tempfile
@@ -11,11 +12,12 @@ from pathlib import Path
 import requests
 import zstandard as zstd
 from Cython.Build import cythonize
-from setuptools import setup
+from setuptools import Distribution, setup
 from setuptools.command.build_ext import build_ext
 from setuptools.extension import Extension
 
 PREFIX = tempfile.gettempdir()
+PREFIX = '.'
 
 windows_dependencies_manifest = {
     'oniguruma': [
@@ -57,6 +59,7 @@ class BuildExt(build_ext):
     def run(self):
         self.prepare_windows_build_dependencies()
         super().run()
+        self.copy_dlls()
 
     def download(self, url: str, file_hash: str) -> bytes:
         # blob is small, no need to read by chunk
@@ -95,7 +98,6 @@ class BuildExt(build_ext):
                 else:
                     tarfile.open(fileobj=stream_fp).extractall(path=PREFIX)
 
-        # self.patch_jv_header(rf'{TMP}\mingw64\include\jv.h')
         self.patch_jv_header(rf'{PREFIX}/mingw64/include/jv.h')
 
 
@@ -106,6 +108,17 @@ class BuildExt(build_ext):
             lines.insert(104, '#define JV_VPRINTF_LIKE(fmt_arg_num)\n')
             file.seek(0)
             file.writelines(lines)
+
+    def copy_dlls(self):
+        # os.makedirs('jq')
+        shutil.copy('mingw64/bin/libgcc_s_seh-1.dll',  'jq')
+        shutil.copy('mingw64/bin/libwinpthread-1.dll', 'jq')
+        # shutil.move(glob('build/lib.win*/*.pyd')[0], 'jq')
+
+
+class BinaryDistribution(Distribution):
+    def has_ext_modules(self):
+        return True
 
 
 def win_setup():
@@ -135,27 +148,19 @@ def win_setup():
         url='http://github.com/mwilliamson/jq.py',
         python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
         license='BSD 2-Clause',
-        ext_modules = cythonize(
+        ext_modules=cythonize(
             [extension],
             compiler_directives={'language_level': sys.version_info[0]},
         ),
         cmdclass={"build_ext": BuildExt},
+        # why specifying a dir enables including `lib*.dll`? Feels like CSS
+        options={'build': {'build_lib': 'jq'}},
         include_package_data=True,
-        # https://docs.python.org/3/distutils/setupscript.html#distutils-additional-files 
-        # The documentation says:
-
-        # You can specify the data_files options as a simple sequence of files
-        # without specifying a target directory, but this is not recommended, and
-        # the install command will print a warning in this case. To install data
-        # files directly in the target directory, an empty string should be given
-        # as the directory.
-
-        # Bullshit! I cannot use an empty string because of:
-
-        # warning: install_data: setup script did not provide a directory for '' -- installing right in 'build\bdist.win-amd64\egg'
-        # error: can't copy '': doesn't exist or not a regular file
-        data_files=[
-            f'{PREFIX}/mingw64/bin/libgcc_s_seh-1.dll',
-            f'{PREFIX}/mingw64/bin/libwinpthread-1.dll',
-        ],
+        distclass=BinaryDistribution,
+        package_data={
+            'jq': [
+                'libwinpthread-1.dll',
+                'libgcc_s_seh-1.dll',
+            ]
+        },
     )
