@@ -254,6 +254,10 @@ cdef class _ProgramWithInput(object):
         return _ResultIterator(self._jq_state_pool, self._bytes_input)
 
     def text(self):
+        # Performance testing suggests that using _jv_to_python (within the
+        # result iterator) followed by json.dumps is faster than using
+        # jv_dump_string to generate the string directly from the jv values.
+        # See: https://github.com/mwilliamson/jq.py/pull/50
         return "\n".join(json.dumps(v) for v in self)
 
     def all(self):
