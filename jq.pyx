@@ -26,6 +26,15 @@ cdef extern from "jv.h":
     int jv_invalid_has_msg(jv)
     char* jv_string_value(jv)
     jv jv_dump_string(jv, int flags)
+    int jv_is_integer(jv)
+    double jv_number_value(jv)
+    int jv_array_length(jv)
+    jv jv_array_get(jv, int)
+    int jv_object_iter(jv)
+    int jv_object_iter_next(jv, int)
+    int jv_object_iter_valid(jv, int)
+    jv jv_object_iter_key(jv, int)
+    jv jv_object_iter_value(jv, int)
 
     cdef struct jv_parser:
         pass
@@ -49,6 +58,52 @@ cdef extern from "jq.h":
     jv jq_next(jq_state *)
     void jq_set_error_cb(jq_state *, jq_err_cb, void *)
     void jq_get_error_cb(jq_state *, jq_err_cb *, void **)
+
+
+cdef object _jv_to_python(jv value):
+    """Unpack a jv value into a Python value"""
+    cdef jv_kind kind = jv_get_kind(value)
+    cdef int idx
+    cdef jv property_key
+    cdef jv property_value
+    cdef object python_value
+
+    if kind == JV_KIND_INVALID:
+        raise ValueError("Invalid value")
+    elif kind == JV_KIND_NULL:
+        python_value = None
+    elif kind == JV_KIND_FALSE:
+        python_value = False
+    elif kind == JV_KIND_TRUE:
+        python_value = True
+    elif kind == JV_KIND_NUMBER:
+        if jv_is_integer(value):
+            python_value = int(jv_number_value(value))
+        else:
+            python_value = float(jv_number_value(value))
+    elif kind == JV_KIND_STRING:
+        python_value = jv_string_value(value).decode("utf-8")
+    elif kind == JV_KIND_ARRAY:
+        python_value = []
+        for idx in range(0, jv_array_length(jv_copy(value))):
+            property_value = jv_array_get(jv_copy(value), idx)
+            python_value.append(_jv_to_python(property_value))
+    elif kind == JV_KIND_OBJECT:
+        python_value = {}
+        idx = jv_object_iter(value)
+        while jv_object_iter_valid(value, idx):
+            property_key = jv_object_iter_key(value, idx)
+            property_value = jv_object_iter_value(value, idx)
+            try:
+                python_value[jv_string_value(property_key).decode("utf-8")] = \
+                    _jv_to_python(property_value)
+            finally:
+                jv_free(property_key)
+            idx = jv_object_iter_next(value, idx)
+    else:
+        raise ValueError("Invalid value kind: " + str(kind))
+    jv_free(value)
+    return python_value
 
 
 def compile(object program):
@@ -199,13 +254,7 @@ cdef class _ProgramWithInput(object):
         return _ResultIterator(self._jq_state_pool, self._bytes_input)
 
     def text(self):
-        iterator = self._make_iterator()
-        results = []
-        while True:
-            try:
-                results.append(iterator._next_string())
-            except StopIteration:
-                return "\n".join(results)
+        return "\n".join(json.dumps(v) for v in self)
 
     def all(self):
         return list(self)
@@ -239,9 +288,6 @@ cdef class _ResultIterator(object):
         return self
 
     def __next__(self):
-        return json.loads(self._next_string())
-
-    cdef unicode _next_string(self):
         cdef int dumpopts = 0
         while True:
             if not self._ready:
@@ -250,16 +296,14 @@ cdef class _ResultIterator(object):
 
             result = jq_next(self._jq)
             if jv_is_valid(result):
-                dumped = jv_dump_string(result, dumpopts)
-                value = jv_string_value(dumped).decode("utf8")
-                jv_free(dumped)
-                return value
+                return _jv_to_python(result)
             elif jv_invalid_has_msg(jv_copy(result)):
                 error_message = jv_invalid_get_msg(result)
                 message = jv_string_value(error_message).decode("utf8")
                 jv_free(error_message)
                 raise ValueError(message)
             else:
+                jv_free(result)
                 self._ready = False
 
     cdef bint _ready_next_input(self) except 1:
@@ -274,6 +318,7 @@ cdef class _ResultIterator(object):
             jv_free(error_message)
             raise ValueError(u"parse error: " + message)
         else:
+            jv_free(value)
             raise StopIteration()
 
 
