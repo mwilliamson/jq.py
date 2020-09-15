@@ -378,7 +378,8 @@ cdef class _ProgramWithInput(object):
         return self._make_iterator()
 
     cdef _ResultIterator _make_iterator(self):
-        return _ResultIterator(self._jq_state_pool, self._bytes_input)
+        return _ResultIterator(self._jq_state_pool,
+                               parse_json(text=self._bytes_input, packed=True))
 
     def text(self):
         # Performance testing suggests that using _jv_to_python (within the
@@ -395,27 +396,27 @@ cdef class _ProgramWithInput(object):
 
 
 cdef class _ResultIterator(object):
+    """Program result iterator"""
     cdef _JqStatePool _jq_state_pool
     cdef jq_state* _jq
-    cdef jv_parser* _parser
-    cdef object _bytes_input
+    cdef _JSONParser _parser_input
     cdef bint _ready
 
     def __dealloc__(self):
         self._jq_state_pool.release(self._jq)
-        jv_parser_free(self._parser)
 
-    def __cinit__(self, _JqStatePool jq_state_pool, object bytes_input):
+    def __cinit__(self, _JqStatePool jq_state_pool, _JSONParser parser_input):
+        """
+        Initialize the result iterator.
+
+        Args:
+            jq_state_pool:  The JQ state pool to acquire program state from.
+            parser_input:   The parser to receive packed input values from.
+        """
         self._jq_state_pool = jq_state_pool
         self._jq = jq_state_pool.acquire()
-        self._bytes_input = bytes_input
         self._ready = False
-        cdef jv_parser* parser = jv_parser_new(0)
-        cdef char* cbytes_input
-        cdef ssize_t clen_input
-        PyBytes_AsStringAndSize(bytes_input, &cbytes_input, &clen_input)
-        jv_parser_set_buf(parser, cbytes_input, clen_input, 0)
-        self._parser = parser
+        self._parser_input = parser_input
 
     def __iter__(self):
         return self
@@ -440,18 +441,10 @@ cdef class _ResultIterator(object):
 
     cdef bint _ready_next_input(self) except 1:
         cdef int jq_flags = 0
-        cdef jv value = jv_parser_next(self._parser)
-        if jv_is_valid(value):
-            jq_start(self._jq, value, jq_flags)
-            return 0
-        elif jv_invalid_has_msg(jv_copy(value)):
-            error_message = jv_invalid_get_msg(value)
-            message = jv_string_value(error_message).decode("utf8")
-            jv_free(error_message)
-            raise ValueError(u"parse error: " + message)
-        else:
-            jv_free(value)
-            raise StopIteration()
+        cdef _JV packed = next(self._parser_input)
+        jq_start(self._jq, packed._value, jq_flags)
+        packed._value = jv_invalid()
+        return 0
 
 
 def all(program, value=_NO_VALUE, text=_NO_VALUE):
