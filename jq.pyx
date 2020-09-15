@@ -36,6 +36,7 @@ cdef extern from "jv.h":
     int jv_object_iter_valid(jv, int)
     jv jv_object_iter_key(jv, int)
     jv jv_object_iter_value(jv, int)
+    jv jv_invalid()
 
     cdef struct jv_parser:
         pass
@@ -114,18 +115,49 @@ class JSONParseError(Exception):
     """A failure to parse JSON"""
 
 
+cdef class _JV(object):
+    """Native JSON value"""
+    cdef jv _value
+
+    def __dealloc__(self):
+        jv_free(self._value)
+
+    def __cinit__(self):
+        self._value = jv_invalid()
+
+    def unpack(self):
+        """
+        Unpack the JSON value into standard Python representation.
+
+        Returns:
+            An unpacked copy of the JSON value.
+        """
+        return _jv_to_python(jv_copy(self._value))
+
+
 cdef class _JSONParser(object):
     cdef jv_parser* _parser
     cdef object _text_iter
     cdef object _bytes
+    cdef int _packed
 
     def __dealloc__(self):
         jv_parser_free(self._parser)
 
-    def __cinit__(self, text_iter):
+    def __cinit__(self, text_iter, packed):
+        """
+        Initialize the parser.
+
+        Args:
+            text_iter:  An iterator producing pieces of the JSON stream text
+                        (strings or bytes) to parse.
+            packed:     Make the iterator return jq-native packed values,
+                        if true, and standard Python values, if false.
+        """
         self._parser = jv_parser_new(0)
         self._text_iter = text_iter
         self._bytes = None
+        self._packed = bool(packed)
 
     def __iter__(self):
         return self
@@ -150,7 +182,12 @@ cdef class _JSONParser(object):
             # Parse whatever we've readied, if any
             value = jv_parser_next(self._parser)
             if jv_is_valid(value):
-                return _jv_to_python(value)
+                if self._packed:
+                    packed = _JV()
+                    packed._value = value
+                    return packed
+                else:
+                    return _jv_to_python(value)
             elif jv_invalid_has_msg(jv_copy(value)):
                 error_message = jv_invalid_get_msg(value)
                 message = jv_string_value(error_message).decode("utf8")
@@ -429,7 +466,7 @@ def text(program, value=_NO_VALUE, text=_NO_VALUE):
     return compile(program).input(value, text=text).text()
 
 
-def parse_json(text=_NO_VALUE, text_iter=_NO_VALUE):
+def parse_json(text=_NO_VALUE, text_iter=_NO_VALUE, packed=False):
     """
     Parse a JSON stream.
     Either "text" or "text_iter" must be specified.
@@ -439,6 +476,8 @@ def parse_json(text=_NO_VALUE, text_iter=_NO_VALUE):
                     parse.
         text_iter:  An iterator returning strings or bytes - pieces of the
                     JSON stream to parse.
+        packed:     If true, return packed, jq-native JSON values.
+                    If false, return standard Python JSON values.
 
     Returns:
         An iterator returning parsed values.
@@ -450,15 +489,18 @@ def parse_json(text=_NO_VALUE, text_iter=_NO_VALUE):
         raise ValueError("Either the text or text_iter argument should be set")
     return _JSONParser(text_iter
                        if text_iter is not _NO_VALUE
-                       else _iter((text,)))
+                       else _iter((text,)),
+                       packed)
 
 
-def parse_json_file(fp):
+def parse_json_file(fp, packed=False):
     """
     Parse a JSON stream file.
 
     Args:
         fp: The file-like object to read the JSON stream from.
+        packed: If true, return packed, jq-native JSON values.
+                If false, return standard Python JSON values.
 
     Returns:
         An iterator returning parsed values.
@@ -466,7 +508,7 @@ def parse_json_file(fp):
     Raises:
         JSONParseError: failed parsing the JSON stream.
     """
-    return parse_json(text=fp.read())
+    return parse_json(text=fp.read(), packed=packed)
 
 
 # Support the 0.1.x API for backwards compatibility
