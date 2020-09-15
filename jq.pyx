@@ -359,10 +359,18 @@ cdef class _Program(object):
 
 
 cdef class _ProgramWithInput(object):
+    """Input-supplied program"""
     cdef _JqStatePool _jq_state_pool
     cdef object _bytes_input
 
     def __cinit__(self, jq_state_pool, bytes_input):
+        """
+        Initialize the input-supplied program.
+
+        Args:
+            jq_state_pool:  The JQ state pool to acquire program state from.
+            bytes_input:    The bytes containing input JSON.
+        """
         self._jq_state_pool = jq_state_pool
         self._bytes_input = bytes_input
 
