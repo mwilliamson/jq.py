@@ -206,9 +206,11 @@ def program_string_can_be_retrieved_from_program():
     assert_equal(".", program.program_string)
 
 @istest
-def parse_json_both_text_and_text_iter_accepted():
+def parse_json_all_inputs_accepted():
     assert_equal(True, next(jq.parse_json(text="true")))
     assert_equal(True, next(jq.parse_json(text_iter=iter(["true"]))))
+    assert_equal(True, next(jq.parse_json(text=b"true")))
+    assert_equal(True, next(jq.parse_json(text_iter=iter([b"true"]))))
 
 @istest
 def parse_json_file_works():

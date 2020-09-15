@@ -167,7 +167,11 @@ cdef class _JSONParser(object):
         cdef char* cbytes
         cdef ssize_t clen
         try:
-            self._bytes = next(self._text_iter).encode("utf8")
+            text = next(self._text_iter)
+            if isinstance(text, bytes):
+                self._bytes = text
+            else:
+                self._bytes = text.encode("utf8")
             PyBytes_AsStringAndSize(self._bytes, &cbytes, &clen)
             jv_parser_set_buf(self._parser, cbytes, clen, 1)
         except StopIteration:
@@ -431,9 +435,10 @@ def parse_json(text=_NO_VALUE, text_iter=_NO_VALUE):
     Either "text" or "text_iter" must be specified.
 
     Args:
-        text:       A string containing the JSON stream to parse.
-        text_iter:  An iterator returning strings - pieces of the JSON stream
-                    to parse.
+        text:       A string or bytes object containing the JSON stream to
+                    parse.
+        text_iter:  An iterator returning strings or bytes - pieces of the
+                    JSON stream to parse.
 
     Returns:
         An iterator returning parsed values.
@@ -454,7 +459,6 @@ def parse_json_file(fp):
 
     Args:
         fp: The file-like object to read the JSON stream from.
-            Must be in text mode.
 
     Returns:
         An iterator returning parsed values.
