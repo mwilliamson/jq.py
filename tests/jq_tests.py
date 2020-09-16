@@ -178,6 +178,58 @@ def unicode_strings_can_be_used_as_input():
 
 
 @istest
+def record_separator_character_accepted_in_input():
+    assert_equal(
+        [],
+        list(jq.compile(".").input(text='\x1e'))
+    )
+    assert_equal(
+        [],
+        list(jq.compile(".").input(text='\x1e\x1e'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='\x1e{}'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='\x1e\x1e{}'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='{}\x1e'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='{}\x1e\x1e'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='\x1e{}\x1e'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='{}\x1e[]'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='{}\x1e\x1e[]'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='\x1e{}\x1e[]'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='{}\x1e[]\x1e'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='\x1e{}\x1e[]\x1e'))
+    )
+
+
+@istest
 def unicode_strings_can_be_used_as_programs():
     assert_equal(
         "Dragon‽",
@@ -211,6 +263,21 @@ def parse_json_all_inputs_accepted():
     assert_equal(True, next(jq.parse_json(text_iter=iter(["true"]))))
     assert_equal(True, next(jq.parse_json(text=b"true")))
     assert_equal(True, next(jq.parse_json(text_iter=iter([b"true"]))))
+
+@istest
+def parse_json_record_separator_character_accepted():
+    assert_equal([], list(jq.parse_json(text='\x1e')))
+    assert_equal([], list(jq.parse_json(text='\x1e\x1e')))
+    assert_equal([{}], list(jq.parse_json(text='\x1e{}')))
+    assert_equal([{}], list(jq.parse_json(text='\x1e\x1e{}')))
+    assert_equal([{}], list(jq.parse_json(text='{}\x1e')))
+    assert_equal([{}], list(jq.parse_json(text='{}\x1e\x1e')))
+    assert_equal([{}], list(jq.parse_json(text='\x1e{}\x1e')))
+    assert_equal([{},[]], list(jq.parse_json(text='{}\x1e[]')))
+    assert_equal([{},[]], list(jq.parse_json(text='{}\x1e\x1e[]')))
+    assert_equal([{},[]], list(jq.parse_json(text='\x1e{}\x1e[]')))
+    assert_equal([{},[]], list(jq.parse_json(text='{}\x1e[]\x1e')))
+    assert_equal([{},[]], list(jq.parse_json(text='\x1e{}\x1e[]\x1e')))
 
 @istest
 def parse_json_file_works():

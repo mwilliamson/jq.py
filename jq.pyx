@@ -44,6 +44,7 @@ cdef extern from "jv.h":
     jv_parser* jv_parser_new(int)
     void jv_parser_free(jv_parser*)
     void jv_parser_set_buf(jv_parser*, const char*, int, int)
+    int jv_parser_remaining(jv_parser*)
     jv jv_parser_next(jv_parser*)
 
     jv jv_parse(const char*)
@@ -175,11 +176,11 @@ cdef class _JSONParser(object):
         """
         cdef jv value
         while True:
-            # If we have no bytes to parse
-            if self._bytes is None:
-                # Ready some more
+            # If the parser has no buffer set/left
+            if not jv_parser_remaining(self._parser):
+                # Supply it with some bytes
                 self._ready_next_bytes()
-            # Parse whatever we've readied, if any
+            # Get next value from the parser
             value = jv_parser_next(self._parser)
             if jv_is_valid(value):
                 if self._packed:
@@ -193,12 +194,10 @@ cdef class _JSONParser(object):
                 message = jv_string_value(error_message).decode("utf8")
                 jv_free(error_message)
                 raise JSONParseError(message)
-            else:
-                jv_free(value)
-                # If we didn't ready any bytes
-                if self._bytes is None:
-                    raise StopIteration
-                self._bytes = None
+            jv_free(value)
+            # If we supplied no bytes last time
+            if self._bytes is None:
+                raise StopIteration
 
     cdef bint _ready_next_bytes(self) except 1:
         cdef char* cbytes
