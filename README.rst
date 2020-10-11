@@ -106,6 +106,13 @@ Call ``iter()`` to get all of the output elements as an iterator:
     assert next(iterator, None) == 4
     assert next(iterator, None) == None
 
+Calling ``compile()`` with the ``args`` argument allows predefined variables to be used within the program:
+
+.. code-block:: python
+
+    program = jq.compile("$a + $b + .", args={"a": 100, "b": 20})
+    assert program.input(3).first() == 123
+
 Convenience functions are available to get the output for a program and input in one call:
 
 .. code-block:: python

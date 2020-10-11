@@ -185,6 +185,14 @@ def unicode_strings_can_be_used_as_programs():
 
 
 @istest
+def compiling_with_args_should_set_predefined_variables():
+    assert_equal(
+        123,
+        jq.compile("$a + $b + .", args={"a": 100, "b": 20}).input(3).first()
+    )
+
+
+@istest
 def repr_of_compile_result_is_compilation_string():
     program = jq.compile(".")
     repr_string = repr(program)
