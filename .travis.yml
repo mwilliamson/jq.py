@@ -17,7 +17,7 @@ jobs:
         - "docker"
       python: "3.8"
       install:
-        - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv
+        - python3 -m pip install cibuildwheel==1.6.2 twine virtualenv
       script:
         - export CIBW_BEFORE_BUILD="pip install cython==0.29.16 && cython {project}/jq.pyx"
         - export CIBW_TEST_REQUIRES="-r test-requirements.txt"
@@ -32,7 +32,7 @@ jobs:
       osx_image: xcode11.2
       language: "shell"
       install:
-        - python3 -m pip install cibuildwheel==1.3.0 twine virtualenv
+        - python3 -m pip install cibuildwheel==1.6.2 twine virtualenv
       script:
         - export CIBW_BEFORE_BUILD="pip install cython==0.29.16 && cython {project}/jq.pyx"
         - export CIBW_TEST_REQUIRES="-r test-requirements.txt"
