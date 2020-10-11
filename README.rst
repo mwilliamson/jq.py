@@ -43,7 +43,7 @@ If on Red Hat, Fedora, CentOS, or relatives, running the following command shoul
 .. code-block:: sh
 
     yum groupinstall "Development Tools"
-    yum install autoconf automake libtool python
+    yum install autoconf automake libtool python python-devel
 
 Mac OS X
 ~~~~~~~~
