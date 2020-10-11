@@ -206,104 +206,100 @@ def program_string_can_be_retrieved_from_program():
 
 
 @istest
-def program_preserves_null():
-    program = jq.compile(".")
-    assert_is(None, program.input(text='null').first())
+class TestJvToPython(object):
+    @istest
+    def program_preserves_null(self):
+        program = jq.compile(".")
+        assert_is(None, program.input(text='null').first())
 
+    @istest
+    def program_preserves_bools(self):
+        program = jq.compile(".")
+        assert_is(False, program.input(text="false").first())
+        assert_is(True, program.input(text="true").first())
 
-@istest
-def program_preserves_bools():
-    program = jq.compile(".")
-    assert_is(False, program.input(text="false").first())
-    assert_is(True, program.input(text="true").first())
+    @istest
+    def program_preserves_ints(self):
+        program = jq.compile(".")
+        assert_equal(int, type(program.input(text="0").first()))
+        assert_equal(0, program.input(text="0").first())
+        assert_equal(1, program.input(text="1").first())
+        assert_equal(-1, program.input(text="-1").first())
+        assert_equal(12345, program.input(text="12345").first())
+        assert_equal(-12345, program.input(text="-12345").first())
 
+    @istest
+    def program_preserves_floats(self):
+        program = jq.compile(".")
+        assert_equal(float, type(program.input(text="1.1").first()))
+        assert_equal(3.14159, program.input(text="3.14159").first())
+        assert_equal(-3.14159, program.input(text="-3.14159").first())
+        assert_equal(42E100, program.input(text="42E100").first())
+        assert_equal(-42E100, program.input(text="-42E100").first())
 
-@istest
-def program_preserves_ints():
-    program = jq.compile(".")
-    assert_equal(int, type(program.input(text="0").first()))
-    assert_equal(0, program.input(text="0").first())
-    assert_equal(1, program.input(text="1").first())
-    assert_equal(-1, program.input(text="-1").first())
-    assert_equal(12345, program.input(text="12345").first())
-    assert_equal(-12345, program.input(text="-12345").first())
+    @istest
+    def program_preserves_strings(self):
+        program = jq.compile(".")
+        assert_equal(type(""), type(program.input(text='""').first()))
+        assert_equal("", program.input(text='""').first())
+        assert_equal("x", program.input(text='"x"').first())
+        assert_equal("xyz", program.input(text='"xyz"').first())
 
+    @istest
+    def program_preserves_arrays(self):
+        program = jq.compile(".")
 
-@istest
-def program_preserves_floats():
-    program = jq.compile(".")
-    assert_equal(float, type(program.input(text="1.1").first()))
-    assert_equal(3.14159, program.input(text="3.14159").first())
-    assert_equal(-3.14159, program.input(text="-3.14159").first())
-    assert_equal(42E100, program.input(text="42E100").first())
-    assert_equal(-42E100, program.input(text="-42E100").first())
+        assert_equal(list, type(program.input(text='[]').first()))
 
+        assert_equal([], program.input(text='[]').first())
 
-@istest
-def program_preserves_strings():
-    program = jq.compile(".")
-    assert_equal(type(""), type(program.input(text='""').first()))
-    assert_equal("", program.input(text='""').first())
-    assert_equal("x", program.input(text='"x"').first())
-    assert_equal("xyz", program.input(text='"xyz"').first())
+        assert_equal([1], program.input(text='[1]').first())
+        assert_equal([1, 2], program.input(text='[1, 2]').first())
 
+        assert_equal([3.14159], program.input(text='[3.14159]').first())
+        assert_equal([3.14159, 95141.3], program.input(text='[3.14159, 95141.3]').first())
 
-@istest
-def program_preserves_arrays():
-    program = jq.compile(".")
+        assert_equal([False], program.input(text='[false]').first())
+        assert_equal([False, True], program.input(text='[false, true]').first())
 
-    assert_equal(list, type(program.input(text='[]').first()))
+        assert_equal([[]], program.input(text='[[]]').first())
+        assert_equal([[[]]], program.input(text='[[[]]]').first())
+        assert_equal([[], []], program.input(text='[[], []]').first())
+        assert_equal([[[], []], [[], []]], program.input(text='[[[], []], [[], []]]').first())
 
-    assert_equal([], program.input(text='[]').first())
+        assert_equal([{}], program.input(text='[{}]').first())
+        assert_equal([{"": []}], program.input(text='[{"": []}]').first())
+        assert_equal([{"1": [], "2": []}], program.input(text='[{"1": [], "2": []}]').first())
 
-    assert_equal([1], program.input(text='[1]').first())
-    assert_equal([1, 2], program.input(text='[1, 2]').first())
+    @istest
+    def program_preserves_objects(self):
+        program = jq.compile(".")
 
-    assert_equal([3.14159], program.input(text='[3.14159]').first())
-    assert_equal([3.14159, 95141.3], program.input(text='[3.14159, 95141.3]').first())
+        assert_equal(dict, type(program.input(text='{}').first()))
 
-    assert_equal([False], program.input(text='[false]').first())
-    assert_equal([False, True], program.input(text='[false, true]').first())
+        assert_equal({}, program.input(text='{}').first())
 
-    assert_equal([[]], program.input(text='[[]]').first())
-    assert_equal([[[]]], program.input(text='[[[]]]').first())
-    assert_equal([[], []], program.input(text='[[], []]').first())
-    assert_equal([[[], []], [[], []]], program.input(text='[[[], []], [[], []]]').first())
+        assert_equal({"": True}, program.input(text='{"": true}').first())
+        assert_equal({"": False}, program.input(text='{"": false}').first())
 
-    assert_equal([{}], program.input(text='[{}]').first())
-    assert_equal([{"": []}], program.input(text='[{"": []}]').first())
-    assert_equal([{"1": [], "2": []}], program.input(text='[{"1": [], "2": []}]').first())
+        assert_equal({"": 0}, program.input(text='{"": 0}').first())
+        assert_equal({"": 1}, program.input(text='{"": 1}').first())
+        assert_equal({"a": 0, "b": 1}, program.input(text='{"a": 0, "b": 1}').first())
+        assert_equal({"": 3.14159}, program.input(text='{"": 3.14159}').first())
+        assert_equal({"a": 3.14159, "b": 95141.3},
+                     program.input(text='{"a": 3.14159, "b": 95141.3}').first())
 
+        assert_equal({"": ""}, program.input(text='{"": ""}').first())
+        assert_equal({"": "x"}, program.input(text='{"": "x"}').first())
 
-@istest
-def program_preserves_objects():
-    program = jq.compile(".")
+        assert_equal({"": []}, program.input(text='{"": []}').first())
+        assert_equal({"": [{}]}, program.input(text='{"": [{}]}').first())
+        assert_equal({"a": [1], "b": [2]},
+                     program.input(text='{"a": [1], "b": [2]}').first())
 
-    assert_equal(dict, type(program.input(text='{}').first()))
-
-    assert_equal({}, program.input(text='{}').first())
-
-    assert_equal({"": True}, program.input(text='{"": true}').first())
-    assert_equal({"": False}, program.input(text='{"": false}').first())
-
-    assert_equal({"": 0}, program.input(text='{"": 0}').first())
-    assert_equal({"": 1}, program.input(text='{"": 1}').first())
-    assert_equal({"a": 0, "b": 1}, program.input(text='{"a": 0, "b": 1}').first())
-    assert_equal({"": 3.14159}, program.input(text='{"": 3.14159}').first())
-    assert_equal({"a": 3.14159, "b": 95141.3},
-                 program.input(text='{"a": 3.14159, "b": 95141.3}').first())
-
-    assert_equal({"": ""}, program.input(text='{"": ""}').first())
-    assert_equal({"": "x"}, program.input(text='{"": "x"}').first())
-
-    assert_equal({"": []}, program.input(text='{"": []}').first())
-    assert_equal({"": [{}]}, program.input(text='{"": [{}]}').first())
-    assert_equal({"a": [1], "b": [2]},
-                 program.input(text='{"a": [1], "b": [2]}').first())
-
-    assert_equal({"": {}}, program.input(text='{"": {}}').first())
-    assert_equal({"a": {}, "b": {}}, program.input(text='{"a": {}, "b": {}}').first())
-    assert_equal({"": {"": {}}}, program.input(text='{"": {"": {}}}').first())
+        assert_equal({"": {}}, program.input(text='{"": {}}').first())
+        assert_equal({"a": {}, "b": {}}, program.input(text='{"a": {}, "b": {}}').first())
+        assert_equal({"": {"": {}}}, program.input(text='{"": {"": {}}}').first())
 
 
 @istest
