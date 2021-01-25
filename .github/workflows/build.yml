@@ -1,0 +1,83 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-10.15]
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, pypy2, pypy3]
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Use Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - run: pip install tox virtualenv
+
+    - run: "make jq.c"
+
+    - run: tox -e py
+
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        name: Use Python 3.7
+        with:
+          python-version: '3.7'
+
+      - run: make jq.c
+
+      - run: pip install build
+
+      - name: Build sdist
+        run: python -m build --sdist
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*.tar.gz
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')
+
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-10.15]
+        python-version: [3.7]
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Use Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - run: python -m pip install cibuildwheel==1.8.0 twine virtualenv
+
+    - run: |
+        python3 -m cibuildwheel --output-dir wheelhouse
+        twine check wheelhouse/*.whl
+      env:
+        CIBW_BEFORE_BUILD: "pip install cython==0.29.16 && cython {project}/jq.pyx"
+        CIBW_TEST_REQUIRES: "-r test-requirements.txt"
+        CIBW_TEST_COMMAND: "nosetests {project}/tests"
+
+    - uses: actions/upload-artifact@v2
+      with:
+        path: ./wheelhouse/*.whl
