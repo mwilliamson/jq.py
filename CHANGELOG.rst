@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.1.2
+-----
+
+* Handle MACOSX_DEPLOYMENT_TARGET being an integer to improve macOS Big Sur support.
+
 1.1.1
 -----
 
