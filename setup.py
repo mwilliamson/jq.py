@@ -79,7 +79,7 @@ class jq_build_ext(build_ext):
 
         macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
         if macosx_deployment_target:
-            os.environ['MACOSX_DEPLOYMENT_TARGET'] = macosx_deployment_target
+            os.environ['MACOSX_DEPLOYMENT_TARGET'] = str(macosx_deployment_target)
 
         def run_command(args):
             print("Executing: %s" % ' '.join(args))
