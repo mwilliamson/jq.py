@@ -80,10 +80,9 @@ cdef object _jv_to_python(jv value):
     elif kind == JV_KIND_TRUE:
         python_value = True
     elif kind == JV_KIND_NUMBER:
-        if jv_is_integer(value):
+        python_value = float(jv_number_value(value))
+        if(python_value.is_integer()):
             python_value = int(jv_number_value(value))
-        else:
-            python_value = float(jv_number_value(value))
     elif kind == JV_KIND_STRING:
         python_value = jv_string_value(value).decode("utf-8")
     elif kind == JV_KIND_ARRAY:
