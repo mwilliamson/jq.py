@@ -2,6 +2,7 @@ import json
 import threading
 
 from cpython.bytes cimport PyBytes_AsString
+from cpython.bytes cimport PyBytes_AsStringAndSize
 
 
 cdef extern from "jv.h":
@@ -35,6 +36,7 @@ cdef extern from "jv.h":
     int jv_object_iter_valid(jv, int)
     jv jv_object_iter_key(jv, int)
     jv jv_object_iter_value(jv, int)
+    jv jv_invalid()
 
     cdef struct jv_parser:
         pass
@@ -42,6 +44,7 @@ cdef extern from "jv.h":
     jv_parser* jv_parser_new(int)
     void jv_parser_free(jv_parser*)
     void jv_parser_set_buf(jv_parser*, const char*, int, int)
+    int jv_parser_remaining(jv_parser*)
     jv jv_parser_next(jv_parser*)
 
     jv jv_parse(const char*)
@@ -107,6 +110,110 @@ cdef object _jv_to_python(jv value):
         raise ValueError("Invalid value kind: " + str(kind))
     jv_free(value)
     return python_value
+
+
+class JSONParseError(Exception):
+    """A failure to parse JSON"""
+
+
+cdef class _JV(object):
+    """Native JSON value"""
+    cdef jv _value
+
+    def __dealloc__(self):
+        jv_free(self._value)
+
+    def __cinit__(self):
+        self._value = jv_invalid()
+
+    def unpack(self):
+        """
+        Unpack the JSON value into standard Python representation.
+
+        Returns:
+            An unpacked copy of the JSON value.
+        """
+        return _jv_to_python(jv_copy(self._value))
+
+
+cdef class _JSONParser(object):
+    cdef jv_parser* _parser
+    cdef object _text_iter
+    cdef object _bytes
+    cdef int _packed
+
+    def __dealloc__(self):
+        jv_parser_free(self._parser)
+
+    def __cinit__(self, text_iter, packed):
+        """
+        Initialize the parser.
+
+        Args:
+            text_iter:  An iterator producing pieces of the JSON stream text
+                        (strings or bytes) to parse.
+            packed:     Make the iterator return jq-native packed values,
+                        if true, and standard Python values, if false.
+        """
+        self._parser = jv_parser_new(0)
+        self._text_iter = text_iter
+        self._bytes = None
+        self._packed = bool(packed)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        """
+        Retrieve next parsed JSON value.
+
+        Returns:
+            The next parsed JSON value.
+
+        Raises:
+            JSONParseError: failed parsing the input JSON.
+            StopIteration: no more values available.
+        """
+        cdef jv value
+        while True:
+            # If the parser has no buffer set/left
+            if not jv_parser_remaining(self._parser):
+                # Supply it with some bytes
+                self._ready_next_bytes()
+            # Get next value from the parser
+            value = jv_parser_next(self._parser)
+            if jv_is_valid(value):
+                if self._packed:
+                    packed = _JV()
+                    packed._value = value
+                    return packed
+                else:
+                    return _jv_to_python(value)
+            elif jv_invalid_has_msg(jv_copy(value)):
+                error_message = jv_invalid_get_msg(value)
+                message = jv_string_value(error_message).decode("utf8")
+                jv_free(error_message)
+                raise JSONParseError(message)
+            jv_free(value)
+            # If we supplied no bytes last time
+            if self._bytes is None:
+                raise StopIteration
+
+    cdef bint _ready_next_bytes(self) except 1:
+        cdef char* cbytes
+        cdef ssize_t clen
+        try:
+            text = next(self._text_iter)
+            if isinstance(text, bytes):
+                self._bytes = text
+            else:
+                self._bytes = text.encode("utf8")
+            PyBytes_AsStringAndSize(self._bytes, &cbytes, &clen)
+            jv_parser_set_buf(self._parser, cbytes, clen, 1)
+        except StopIteration:
+            self._bytes = None
+            jv_parser_set_buf(self._parser, "", 0, 0)
+        return 0
 
 
 def compile(object program, args=None):
@@ -251,10 +358,18 @@ cdef class _Program(object):
 
 
 cdef class _ProgramWithInput(object):
+    """Input-supplied program"""
     cdef _JqStatePool _jq_state_pool
     cdef object _bytes_input
 
     def __cinit__(self, jq_state_pool, bytes_input):
+        """
+        Initialize the input-supplied program.
+
+        Args:
+            jq_state_pool:  The JQ state pool to acquire program state from.
+            bytes_input:    The bytes containing input JSON.
+        """
         self._jq_state_pool = jq_state_pool
         self._bytes_input = bytes_input
 
@@ -262,7 +377,8 @@ cdef class _ProgramWithInput(object):
         return self._make_iterator()
 
     cdef _ResultIterator _make_iterator(self):
-        return _ResultIterator(self._jq_state_pool, self._bytes_input)
+        return _ResultIterator(self._jq_state_pool,
+                               parse_json(text=self._bytes_input, packed=True))
 
     def text(self):
         # Performance testing suggests that using _jv_to_python (within the
@@ -279,31 +395,32 @@ cdef class _ProgramWithInput(object):
 
 
 cdef class _ResultIterator(object):
+    """Program result iterator"""
     cdef _JqStatePool _jq_state_pool
     cdef jq_state* _jq
-    cdef jv_parser* _parser
-    cdef object _bytes_input
+    cdef _JSONParser _parser_input
     cdef bint _ready
 
     def __dealloc__(self):
         self._jq_state_pool.release(self._jq)
-        jv_parser_free(self._parser)
 
-    def __cinit__(self, _JqStatePool jq_state_pool, object bytes_input):
+    def __cinit__(self, _JqStatePool jq_state_pool, _JSONParser parser_input):
+        """
+        Initialize the result iterator.
+
+        Args:
+            jq_state_pool:  The JQ state pool to acquire program state from.
+            parser_input:   The parser to receive packed input values from.
+        """
         self._jq_state_pool = jq_state_pool
         self._jq = jq_state_pool.acquire()
-        self._bytes_input = bytes_input
         self._ready = False
-        cdef jv_parser* parser = jv_parser_new(0)
-        cdef char* cbytes_input = PyBytes_AsString(bytes_input)
-        jv_parser_set_buf(parser, cbytes_input, len(cbytes_input), 0)
-        self._parser = parser
+        self._parser_input = parser_input
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        cdef int dumpopts = 0
         while True:
             if not self._ready:
                 self._ready_next_input()
@@ -323,18 +440,10 @@ cdef class _ResultIterator(object):
 
     cdef bint _ready_next_input(self) except 1:
         cdef int jq_flags = 0
-        cdef jv value = jv_parser_next(self._parser)
-        if jv_is_valid(value):
-            jq_start(self._jq, value, jq_flags)
-            return 0
-        elif jv_invalid_has_msg(jv_copy(value)):
-            error_message = jv_invalid_get_msg(value)
-            message = jv_string_value(error_message).decode("utf8")
-            jv_free(error_message)
-            raise ValueError(u"parse error: " + message)
-        else:
-            jv_free(value)
-            raise StopIteration()
+        cdef _JV packed = next(self._parser_input)
+        jq_start(self._jq, packed._value, jq_flags)
+        packed._value = jv_invalid()
+        return 0
 
 
 def all(program, value=_NO_VALUE, text=_NO_VALUE):
@@ -354,6 +463,51 @@ def iter(program, value=_NO_VALUE, text=_NO_VALUE):
 
 def text(program, value=_NO_VALUE, text=_NO_VALUE):
     return compile(program).input(value, text=text).text()
+
+
+def parse_json(text=_NO_VALUE, text_iter=_NO_VALUE, packed=False):
+    """
+    Parse a JSON stream.
+    Either "text" or "text_iter" must be specified.
+
+    Args:
+        text:       A string or bytes object containing the JSON stream to
+                    parse.
+        text_iter:  An iterator returning strings or bytes - pieces of the
+                    JSON stream to parse.
+        packed:     If true, return packed, jq-native JSON values.
+                    If false, return standard Python JSON values.
+
+    Returns:
+        An iterator returning parsed values.
+
+    Raises:
+        JSONParseError: failed parsing the input JSON stream.
+    """
+    if (text is _NO_VALUE) == (text_iter is _NO_VALUE):
+        raise ValueError("Either the text or text_iter argument should be set")
+    return _JSONParser(text_iter
+                       if text_iter is not _NO_VALUE
+                       else _iter((text,)),
+                       packed)
+
+
+def parse_json_file(fp, packed=False):
+    """
+    Parse a JSON stream file.
+
+    Args:
+        fp: The file-like object to read the JSON stream from.
+        packed: If true, return packed, jq-native JSON values.
+                If false, return standard Python JSON values.
+
+    Returns:
+        An iterator returning parsed values.
+
+    Raises:
+        JSONParseError: failed parsing the JSON stream.
+    """
+    return parse_json(text=fp.read(), packed=packed)
 
 
 # Support the 0.1.x API for backwards compatibility

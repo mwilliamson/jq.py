@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 from nose.tools import istest, assert_equal, assert_is, assert_raises
 
+import io
 import jq
 
 
@@ -163,8 +164,8 @@ def value_error_is_raised_if_input_is_not_valid_json():
     try:
         program.input(text="!!").first()
         assert False, "Expected error"
-    except ValueError as error:
-        expected_error_str = "parse error: Invalid numeric literal at EOF at line 1, column 2"
+    except jq.JSONParseError as error:
+        expected_error_str = "Invalid numeric literal at EOF at line 1, column 2"
         assert_equal(str(error), expected_error_str)
 
 
@@ -173,6 +174,58 @@ def unicode_strings_can_be_used_as_input():
     assert_equal(
         "‽",
         jq.compile(".").input(text='"‽"').first()
+    )
+
+
+@istest
+def record_separator_character_accepted_in_input():
+    assert_equal(
+        [],
+        list(jq.compile(".").input(text='\x1e'))
+    )
+    assert_equal(
+        [],
+        list(jq.compile(".").input(text='\x1e\x1e'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='\x1e{}'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='\x1e\x1e{}'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='{}\x1e'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='{}\x1e\x1e'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input(text='\x1e{}\x1e'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='{}\x1e[]'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='{}\x1e\x1e[]'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='\x1e{}\x1e[]'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='{}\x1e[]\x1e'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input(text='\x1e{}\x1e[]\x1e'))
     )
 
 
@@ -204,6 +257,88 @@ def program_string_can_be_retrieved_from_program():
     program = jq.compile(".")
     assert_equal(".", program.program_string)
 
+@istest
+def parse_json_all_inputs_accepted():
+    assert_equal(True, next(jq.parse_json(text="true")))
+    assert_equal(True, next(jq.parse_json(text_iter=iter(["true"]))))
+    assert_equal(True, next(jq.parse_json(text=b"true")))
+    assert_equal(True, next(jq.parse_json(text_iter=iter([b"true"]))))
+
+@istest
+def parse_json_record_separator_character_accepted():
+    assert_equal([], list(jq.parse_json(text='\x1e')))
+    assert_equal([], list(jq.parse_json(text='\x1e\x1e')))
+    assert_equal([{}], list(jq.parse_json(text='\x1e{}')))
+    assert_equal([{}], list(jq.parse_json(text='\x1e\x1e{}')))
+    assert_equal([{}], list(jq.parse_json(text='{}\x1e')))
+    assert_equal([{}], list(jq.parse_json(text='{}\x1e\x1e')))
+    assert_equal([{}], list(jq.parse_json(text='\x1e{}\x1e')))
+    assert_equal([{},[]], list(jq.parse_json(text='{}\x1e[]')))
+    assert_equal([{},[]], list(jq.parse_json(text='{}\x1e\x1e[]')))
+    assert_equal([{},[]], list(jq.parse_json(text='\x1e{}\x1e[]')))
+    assert_equal([{},[]], list(jq.parse_json(text='{}\x1e[]\x1e')))
+    assert_equal([{},[]], list(jq.parse_json(text='\x1e{}\x1e[]\x1e')))
+
+@istest
+def parse_json_file_works():
+    fp = io.StringIO('{"abc": "def"}')
+    assert_equal([dict(abc="def")], list(jq.parse_json_file(fp)))
+
+@istest
+def parse_json_empty_text_iter_stops():
+    assert_raises(StopIteration, next, jq.parse_json(text_iter=iter([])))
+    assert_raises(StopIteration, next, jq.parse_json(text_iter=iter([""])))
+    assert_raises(StopIteration, next, jq.parse_json(text_iter=iter(["", ""])))
+
+@istest
+def parse_json_single_complete_text_iter_works():
+    assert_equal(False, next(jq.parse_json(text_iter=iter(["false"]))))
+    assert_equal(True, next(jq.parse_json(text_iter=iter(["true"]))))
+    assert_equal(42, next(jq.parse_json(text_iter=iter(["42"]))))
+    assert_equal(-42, next(jq.parse_json(text_iter=iter(["-42"]))))
+    assert_equal("42", next(jq.parse_json(text_iter=iter(['"42"']))))
+    assert_equal([42], next(jq.parse_json(text_iter=iter(["[42]"]))))
+    assert_equal(dict(a=42),
+                 next(jq.parse_json(text_iter=iter(['{"a": 42}']))))
+
+@istest
+def parse_json_multi_complete_text_iter_works():
+    assert_equal(False, next(jq.parse_json(text_iter=iter(["fa", "lse"]))))
+    assert_equal(True, next(jq.parse_json(text_iter=iter(["tr", "ue"]))))
+    assert_equal(42, next(jq.parse_json(text_iter=iter(["4", "2"]))))
+    assert_equal(-42, next(jq.parse_json(text_iter=iter(["-4", "2"]))))
+    assert_equal("42", next(jq.parse_json(text_iter=iter(['"4', '2"']))))
+    assert_equal([42], next(jq.parse_json(text_iter=iter(["[4", "2]"]))))
+    assert_equal(dict(a=42),
+                 next(jq.parse_json(text_iter=iter(['{"a":', ' 42}']))))
+
+@istest
+def parse_json_single_incomplete_text_iter_breaks():
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(["fals"])))
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(["tru"])))
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(["-"])))
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(['"42'])))
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(["[42"])))
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(['{"a": 42'])))
+
+@istest
+def parse_json_multi_incomplete_text_iter_breaks():
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(["fa", "ls"])))
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(["tr", "u"])))
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(['"4', '2'])))
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(["[4", "2"])))
+    assert_raises(jq.JSONParseError, next,
+                  jq.parse_json(text_iter=iter(['{"a":', ' 42'])))
 
 @istest
 class TestJvToPython(object):

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 from nose.tools import istest, assert_equal, assert_raises
 
-from jq import jq
+from jq import jq, JSONParseError
 
 
 @istest
@@ -118,8 +118,8 @@ def value_error_is_raised_if_input_is_not_valid_json():
     try:
         program.transform(text="!!")
         assert False, "Expected error"
-    except ValueError as error:
-        expected_error_str = "parse error: Invalid numeric literal at EOF at line 1, column 2"
+    except JSONParseError as error:
+        expected_error_str = "Invalid numeric literal at EOF at line 1, column 2"
         assert_equal(str(error), expected_error_str)
 
 
