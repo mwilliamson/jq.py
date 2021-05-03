@@ -2,6 +2,7 @@ import json
 import threading
 
 from cpython.bytes cimport PyBytes_AsString
+from cpython.bytes cimport PyBytes_AsStringAndSize
 
 
 cdef extern from "jv.h":
@@ -107,6 +108,76 @@ cdef object _jv_to_python(jv value):
         raise ValueError("Invalid value kind: " + str(kind))
     jv_free(value)
     return python_value
+
+
+class JSONParseError(Exception):
+    """A failure to parse JSON"""
+
+
+cdef class _JSONParser(object):
+    cdef jv_parser* _parser
+    cdef object _text_iter
+    cdef object _bytes
+
+    def __dealloc__(self):
+        jv_parser_free(self._parser)
+
+    def __cinit__(self, text_iter):
+        self._parser = jv_parser_new(0)
+        self._text_iter = text_iter
+        self._bytes = None
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        """
+        Retrieve next parsed JSON value.
+
+        Returns:
+            The next parsed JSON value.
+
+        Raises:
+            JSONParseError: failed parsing the input JSON.
+            StopIteration: no more values available.
+        """
+        cdef jv value
+        while True:
+            # If we have no bytes to parse
+            if self._bytes is None:
+                # Ready some more
+                self._ready_next_bytes()
+            # Parse whatever we've readied, if any
+            value = jv_parser_next(self._parser)
+            if jv_is_valid(value):
+                return _jv_to_python(value)
+            elif jv_invalid_has_msg(jv_copy(value)):
+                error_message = jv_invalid_get_msg(value)
+                message = jv_string_value(error_message).decode("utf8")
+                jv_free(error_message)
+                raise JSONParseError(message)
+            else:
+                jv_free(value)
+                # If we didn't ready any bytes
+                if self._bytes is None:
+                    raise StopIteration
+                self._bytes = None
+
+    cdef bint _ready_next_bytes(self) except 1:
+        cdef char* cbytes
+        cdef ssize_t clen
+        try:
+            text = next(self._text_iter)
+            if isinstance(text, bytes):
+                self._bytes = text
+            else:
+                self._bytes = text.encode("utf8")
+            PyBytes_AsStringAndSize(self._bytes, &cbytes, &clen)
+            jv_parser_set_buf(self._parser, cbytes, clen, 1)
+        except StopIteration:
+            self._bytes = None
+            jv_parser_set_buf(self._parser, "", 0, 0)
+        return 0
 
 
 def compile(object program, args=None):
@@ -295,8 +366,10 @@ cdef class _ResultIterator(object):
         self._bytes_input = bytes_input
         self._ready = False
         cdef jv_parser* parser = jv_parser_new(0)
-        cdef char* cbytes_input = PyBytes_AsString(bytes_input)
-        jv_parser_set_buf(parser, cbytes_input, len(cbytes_input), 0)
+        cdef char* cbytes_input
+        cdef ssize_t clen_input
+        PyBytes_AsStringAndSize(bytes_input, &cbytes_input, &clen_input)
+        jv_parser_set_buf(parser, cbytes_input, clen_input, 0)
         self._parser = parser
 
     def __iter__(self):
@@ -354,6 +427,46 @@ def iter(program, value=_NO_VALUE, text=_NO_VALUE):
 
 def text(program, value=_NO_VALUE, text=_NO_VALUE):
     return compile(program).input(value, text=text).text()
+
+
+def parse_json(text=_NO_VALUE, text_iter=_NO_VALUE):
+    """
+    Parse a JSON stream.
+    Either "text" or "text_iter" must be specified.
+
+    Args:
+        text:       A string or bytes object containing the JSON stream to
+                    parse.
+        text_iter:  An iterator returning strings or bytes - pieces of the
+                    JSON stream to parse.
+
+    Returns:
+        An iterator returning parsed values.
+
+    Raises:
+        JSONParseError: failed parsing the input JSON stream.
+    """
+    if (text is _NO_VALUE) == (text_iter is _NO_VALUE):
+        raise ValueError("Either the text or text_iter argument should be set")
+    return _JSONParser(text_iter
+                       if text_iter is not _NO_VALUE
+                       else _iter((text,)))
+
+
+def parse_json_file(fp):
+    """
+    Parse a JSON stream file.
+
+    Args:
+        fp: The file-like object to read the JSON stream from.
+
+    Returns:
+        An iterator returning parsed values.
+
+    Raises:
+        JSONParseError: failed parsing the JSON stream.
+    """
+    return parse_json(text=fp.read())
 
 
 # Support the 0.1.x API for backwards compatibility
