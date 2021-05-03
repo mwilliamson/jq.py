@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.1.3
+-----
+
+* Include LICENSE in sdist.
+
 1.1.2
 -----
 
