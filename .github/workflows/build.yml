@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, macos-10.15]
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, pypy2, pypy3]
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, "3.10.0-beta.4", pypy2, pypy3]
 
     steps:
 
@@ -74,7 +74,7 @@ jobs:
         python3 -m cibuildwheel --output-dir wheelhouse
         twine check wheelhouse/*.whl
       env:
-        CIBW_BEFORE_BUILD: "pip install cython==0.29.16 && cython {project}/jq.pyx"
+        CIBW_BEFORE_BUILD: "pip install cython==0.29.24 && cython {project}/jq.pyx"
         CIBW_TEST_REQUIRES: "-r test-requirements.txt"
         CIBW_TEST_COMMAND: "nosetests {project}/tests"
 
