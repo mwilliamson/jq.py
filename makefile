@@ -1,7 +1,7 @@
 .PHONY: test test-all upload register clean bootstrap
 
 test: bootstrap
-	_virtualenv/bin/nosetests tests
+	_virtualenv/bin/py.test tests
 
 upload: jq.c
 	python setup.py sdist upload
