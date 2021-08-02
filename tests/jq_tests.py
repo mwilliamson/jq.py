@@ -165,6 +165,15 @@ def test_unicode_strings_can_be_used_as_programs():
     )
 
 
+def test_returned_integers_larger_than_32_bits_have_int_type():
+    program = jq.compile("pow(.; 33)")
+
+    result = program.input(2).first()
+
+    assert_equal(2 ** 33, result)
+    assert_equal(int, type(result))
+
+
 def test_compiling_with_args_should_set_predefined_variables():
     assert_equal(
         123,

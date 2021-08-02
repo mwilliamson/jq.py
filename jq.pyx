@@ -2,6 +2,7 @@ import json
 import threading
 
 from cpython.bytes cimport PyBytes_AsString
+from libc.math cimport modf
 
 
 cdef extern from "jv.h":
@@ -70,6 +71,7 @@ cdef object _jv_to_python(jv value):
     cdef jv property_key
     cdef jv property_value
     cdef object python_value
+    cdef double number_value
 
     if kind == JV_KIND_INVALID:
         raise ValueError("Invalid value")
@@ -80,10 +82,11 @@ cdef object _jv_to_python(jv value):
     elif kind == JV_KIND_TRUE:
         python_value = True
     elif kind == JV_KIND_NUMBER:
-        if jv_is_integer(value):
-            python_value = int(jv_number_value(value))
+        number_value = jv_number_value(value)
+        if _is_integer(number_value):
+            python_value = int(number_value)
         else:
-            python_value = float(jv_number_value(value))
+            python_value = number_value
     elif kind == JV_KIND_STRING:
         python_value = jv_string_value(value).decode("utf-8")
     elif kind == JV_KIND_ARRAY:
@@ -107,6 +110,13 @@ cdef object _jv_to_python(jv value):
         raise ValueError("Invalid value kind: " + str(kind))
     jv_free(value)
     return python_value
+
+
+cdef int _is_integer(double value):
+    cdef double integral_part
+    cdef double fractional_part = modf(value, &integral_part)
+
+    return fractional_part == 0
 
 
 def compile(object program, args=None):
