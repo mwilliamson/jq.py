@@ -76,7 +76,7 @@ jobs:
       env:
         CIBW_BEFORE_BUILD: "pip install cython==0.29.24 && cython {project}/jq.pyx"
         CIBW_TEST_REQUIRES: "-r test-requirements.txt"
-        CIBW_TEST_COMMAND: "nosetests {project}/tests"
+        CIBW_TEST_COMMAND: "py.test {project}/tests"
 
     - uses: actions/upload-artifact@v2
       with:
