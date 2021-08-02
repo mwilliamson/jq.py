@@ -4,7 +4,7 @@ Changelog
 1.2.0
 -----
 
-* Return integers larger than 32 bits as ``int``s.
+* Return integers larger than 32 bits as ints.
 
 1.1.3
 -----
