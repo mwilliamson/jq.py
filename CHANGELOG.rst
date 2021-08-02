@@ -1,8 +1,13 @@
 Changelog
 =========
 
-1.2.0
+1.2.1
 -----
+
+* Drop support for Python 2.7 and Python 3.4.
+
+1.2.0 (Unreleased)
+------------------
 
 * Return integers larger than 32 bits as ints.
 
