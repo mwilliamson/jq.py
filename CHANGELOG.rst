@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.0
+-----
+
+* Return integers larger than 32 bits as ``int``s.
+
 1.1.3
 -----
 
