@@ -39,10 +39,13 @@ jobs:
 
       - run: make jq.c
 
-      - run: pip install build
+      - run: pip install build twine
 
       - name: Build sdist
         run: python -m build --sdist
+
+      - name: Check metadata
+        run: python -m twine check dist/*
 
       - uses: actions/upload-artifact@v2
         with:
