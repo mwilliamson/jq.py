@@ -52,7 +52,7 @@ jobs:
           path: dist/*.tar.gz
 
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }}, linux-arch=${{ matrix.linux-arch }}
 
     runs-on: ${{ matrix.os }}
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')
@@ -61,6 +61,10 @@ jobs:
       matrix:
         os: [ubuntu-20.04, macos-10.15]
         python-version: [3.7]
+        linux-arch: [auto]
+        include:
+          - os: ubuntu-20.04
+            linux-arch: aarch64
 
     steps:
 
@@ -71,12 +75,16 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - run: python -m pip install cibuildwheel==1.12.0 twine virtualenv
+    - name: Set up QEMU
+      if: runner.os == 'Linux'
+      uses: docker/setup-qemu-action@v1
+      with:
+        platforms: all
 
-    - run: |
-        python3 -m cibuildwheel --output-dir wheelhouse
-        twine check wheelhouse/*.whl
+    - name: Build wheels
+      uses: pypa/cibuildwheel@v2.3.1
       env:
+        CIBW_ARCHS_LINUX: ${{ matrix.linux-arch }}
         CIBW_BEFORE_BUILD: "pip install cython==0.29.24 && cython {project}/jq.pyx"
         CIBW_TEST_REQUIRES: "-r test-requirements.txt"
         CIBW_TEST_COMMAND: "py.test {project}/tests"

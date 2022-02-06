@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.2
+-----
+
+* Include support for more wheels, including aarch64 on Linux.
+
 1.2.1
 -----
 
