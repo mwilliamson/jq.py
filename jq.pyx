@@ -144,7 +144,7 @@ cdef jq_state* _compile(object program_bytes, object args) except NULL:
             if args is None:
                 compiled = jq_compile(jq, program_bytes)
             else:
-                args_bytes = json.dumps(args).encode("utf-8")
+                args_bytes = json.dumps(args, separators=(',', ':')).encode("utf-8")
                 jv_args = jv_parse(PyBytes_AsString(args_bytes))
                 compiled = jq_compile_args(jq, program_bytes, jv_args)
 
@@ -238,7 +238,7 @@ cdef class _Program(object):
     def input(self, value=_NO_VALUE, text=_NO_VALUE):
         if (value is _NO_VALUE) == (text is _NO_VALUE):
             raise ValueError("Either the value or text argument should be set")
-        string_input = text if text is not _NO_VALUE else json.dumps(value)
+        string_input = text if text is not _NO_VALUE else json.dumps(value, separators=(',', ':'))
 
         return _ProgramWithInput(self._jq_state_pool, string_input.encode("utf8"))
 
@@ -279,7 +279,7 @@ cdef class _ProgramWithInput(object):
         # result iterator) followed by json.dumps is faster than using
         # jv_dump_string to generate the string directly from the jv values.
         # See: https://github.com/mwilliamson/jq.py/pull/50
-        return "\n".join(json.dumps(v) for v in self)
+        return "\n".join(json.dumps(v, separators=(',', ':')) for v in self)
 
     def all(self):
         return list(self)
