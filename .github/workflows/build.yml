@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, macos-10.15]
-        python-version: [3.5, 3.6, 3.7, 3.8, 3.9, "3.10", pypy3]
+        python-version: [3.5, 3.6, 3.7, 3.8, 3.9, "3.10", "3.11-dev", pypy3]
 
     steps:
 
@@ -82,7 +82,7 @@ jobs:
         platforms: all
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.3.1
+      uses: pypa/cibuildwheel@v2.9.0
       env:
         CIBW_ARCHS_LINUX: ${{ matrix.linux-arch }}
         CIBW_BEFORE_BUILD: "pip install cython==0.29.32 && cython {project}/jq.pyx"
