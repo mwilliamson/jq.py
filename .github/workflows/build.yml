@@ -13,7 +13,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Use Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -30,9 +30,9 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         name: Use Python 3.7
         with:
           python-version: '3.7'
@@ -63,7 +63,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Use Python 3.10
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
@@ -71,10 +71,16 @@ jobs:
         run: python -m pip install cibuildwheel==2.9.0
 
       - id: set-matrix
-        run: python build-wheels-matrix.py
+        run: |
+           MATRIX=$({
+            cibuildwheel --print-build-identifiers --platform linux && \
+            cibuildwheel --print-build-identifiers --platform macos \
+           } | sed 's/^.*$/{"only": "&", "os": "ubuntu-latest"}/g' \
+             | jq -s -c)
+           echo ::set-output name=matrix::"$MATRIX"
 
   build_wheels:
-    name: Build ${{ matrix.CIBW_BUILD }} wheel
+    name: Build ${{ matrix.only }} wheel
 
     needs: build_wheels_matrix
     runs-on: ${{ matrix.os }}
@@ -88,7 +94,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Use Python 3.10
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
@@ -100,13 +106,13 @@ jobs:
 
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.9.0
+      with:
+        only: ${{ matrix.only }}
       env:
-        CIBW_ARCHS: ${{ matrix.CIBW_ARCHS }}
-        CIBW_BUILD: ${{ matrix.CIBW_BUILD }}
         CIBW_BEFORE_BUILD: "pip install cython==0.29.32 && cython {project}/jq.pyx"
         CIBW_TEST_REQUIRES: "-r test-requirements.txt"
         CIBW_TEST_COMMAND: "py.test {project}/tests"
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         path: ./wheelhouse/*.whl
