@@ -110,7 +110,7 @@ jobs:
         platforms: all
 
     - name: Build wheels
-      uses: pypa/cibuildwheel@v2.9.0
+      uses: pypa/cibuildwheel@eb39da0b10a9f48015e84973545691981949b13d
       with:
         only: ${{ matrix.only }}
 
