@@ -71,6 +71,9 @@ jobs:
         run: python -m pip install cibuildwheel==2.9.0
 
       - id: set-matrix
+        env:
+          CIBW_ARCHS_LINUX: "auto64 aarch64"
+          CIBW_ARCHS_MACOS: "auto64"
         run: >
           MATRIX=$(
             echo $(
@@ -93,7 +96,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Use Python 3.10
       uses: actions/setup-python@v4
@@ -110,10 +113,6 @@ jobs:
       uses: pypa/cibuildwheel@v2.9.0
       with:
         only: ${{ matrix.only }}
-      env:
-        CIBW_BEFORE_BUILD: "pip install cython==0.29.32 && cython {project}/jq.pyx"
-        CIBW_TEST_REQUIRES: "-r test-requirements.txt"
-        CIBW_TEST_COMMAND: "py.test {project}/tests"
 
     - uses: actions/upload-artifact@v3
       with:
