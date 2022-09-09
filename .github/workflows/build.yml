@@ -72,13 +72,14 @@ jobs:
 
       - id: set-matrix
         run: >
-           MATRIX=$({
-            cibuildwheel --print-build-identifiers --platform linux
-              | sed 's/^.*$/{"only": "&", "os": "ubuntu-latest"}/g'
-            && cibuildwheel --print-build-identifiers --platform macos
-              | sed 's/^.*$/{"only": "&", "os": "macos-latest"}/g'
-           } | jq -s -c)
-           echo ::set-output name=matrix::"$MATRIX"
+          MATRIX=$(
+            echo $(
+              cibuildwheel --print-build-identifiers --platform linux
+                | sed 's/^.*$/{"only": "&", "os": "ubuntu-latest"}/g'
+              && cibuildwheel --print-build-identifiers --platform macOS
+                | sed 's/^.*$/{"only": "&", "os": "macos-latest" }/g'
+            ) | jq -s -c )
+          && echo ::set-output name=matrix::"$MATRIX"
 
   build_wheels:
     name: Build ${{ matrix.only }} wheel
