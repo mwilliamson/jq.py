@@ -78,7 +78,7 @@ jobs:
             && cibuildwheel --print-build-identifiers --platform macos
               | sed 's/^.*$/{"only": "&", "os": "macos-latest"}/g'
            } | jq -s -c)
-           && echo ::set-output name=matrix::"$MATRIX"
+           echo ::set-output name=matrix::"$MATRIX"
 
   build_wheels:
     name: Build ${{ matrix.only }} wheel
