@@ -74,7 +74,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: "auto64 aarch64"
           CIBW_ARCHS_MACOS: "auto64"
-        run: >
+        run: |
           MATRIX=$(
             {
               cibuildwheel --print-build-identifiers --platform linux
