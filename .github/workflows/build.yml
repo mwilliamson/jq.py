@@ -76,13 +76,14 @@ jobs:
           CIBW_ARCHS_MACOS: "auto64"
         run: >
           MATRIX=$(
-            echo $(
+            {
               cibuildwheel --print-build-identifiers --platform linux
                 | sed 's/.*/{"only": "&", "os": "ubuntu-latest"}/'
               && cibuildwheel --print-build-identifiers --platform macos
                 | sed 's/.*/{"only": "&", "os": "macos-latest" }/'
-            ) | jq -s -c )
-          && echo ::set-output name=matrix::"$MATRIX"
+            } | jq -s -c
+          )
+          echo ::set-output name=matrix::"$MATRIX"
 
   build_wheels:
     name: Build ${{ matrix.only }} wheel
