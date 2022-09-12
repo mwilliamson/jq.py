@@ -89,7 +89,6 @@ jobs:
 
     needs: build_wheels_matrix
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')
 
     strategy:
       matrix: ${{ fromJson(needs.build_wheels_matrix.outputs.matrix) }}
