@@ -81,7 +81,7 @@ jobs:
                 | sed 's/.*/{"only": "&", "os": "ubuntu-latest"}/' \
               && cibuildwheel --print-build-identifiers --platform macos \
                 | sed 's/.*/{"only": "&", "os": "macos-latest" }/'
-            } | jq -s -c
+            } | jq -s -c '{"include": .}'
           )
           echo ::set-output name=matrix::"$MATRIX"
 
