@@ -6,3 +6,4 @@
 /.tox
 /*.egg-info
 /_deps
+/deps/_build

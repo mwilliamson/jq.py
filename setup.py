@@ -6,50 +6,42 @@ import tarfile
 import shutil
 import sysconfig
 
-import requests
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
 from setuptools.extension import Extension
 
 
-def urlretrieve(source_url, destination_path):
-    response = requests.get(source_url, stream=True)
-    if response.status_code != 200:
-        raise Exception("status code was: {}".format(response.status_code))
-
-    with open(destination_path, "wb") as fileobj:
-        for chunk in response.iter_content(chunk_size=128):
-            fileobj.write(chunk)
-
-def path_in_dir(relative_path):
+def _path_in_dir(relative_path):
     return os.path.abspath(os.path.join(os.path.dirname(__file__), relative_path))
 
-def dependency_path(relative_path):
-    return os.path.join(path_in_dir("_deps"), relative_path)
+def _dep_source_path(relative_path):
+    return os.path.join(_path_in_dir("deps"), relative_path)
 
-def read(fname):
+def _dep_build_path(relative_path):
+    return os.path.join(_path_in_dir("_deps/build"), relative_path)
+
+def _read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-jq_lib_tarball_path = dependency_path("jq-lib-1.6.tar.gz")
-jq_lib_dir = dependency_path("jq-1.6")
+jq_lib_tarball_path = _dep_source_path("jq-1.6.tar.gz")
+jq_lib_dir = _dep_build_path("jq-1.6")
 
 oniguruma_version = "6.9.4"
-oniguruma_lib_tarball_path = dependency_path("onig-{}.tar.gz".format(oniguruma_version))
-oniguruma_lib_build_dir = dependency_path("onig-{}".format(oniguruma_version))
-oniguruma_lib_install_dir = dependency_path("onig-install-{}".format(oniguruma_version))
+oniguruma_lib_tarball_path = _dep_source_path("onig-{}.tar.gz".format(oniguruma_version))
+oniguruma_lib_build_dir = _dep_build_path("onig-{}".format(oniguruma_version))
+oniguruma_lib_install_dir = _dep_build_path("onig-install-{}".format(oniguruma_version))
 
 class jq_build_ext(build_ext):
     def run(self):
-        if not os.path.exists(dependency_path(".")):
-            os.makedirs(dependency_path("."))
+        if not os.path.exists(_dep_build_path(".")):
+            os.makedirs(_dep_build_path("."))
         self._build_oniguruma()
         self._build_libjq()
         build_ext.run(self)
 
     def _build_oniguruma(self):
         self._build_lib(
-            source_url="https://github.com/kkos/oniguruma/releases/download/v{0}/onig-{0}.tar.gz".format(oniguruma_version),
             tarball_path=oniguruma_lib_tarball_path,
             lib_dir=oniguruma_lib_build_dir,
             commands=[
@@ -61,7 +53,6 @@ class jq_build_ext(build_ext):
 
     def _build_libjq(self):
         self._build_lib(
-            source_url="https://github.com/stedolan/jq/releases/download/jq-1.6/jq-1.6.tar.gz",
             tarball_path=jq_lib_tarball_path,
             lib_dir=jq_lib_dir,
             commands=[
@@ -69,9 +60,8 @@ class jq_build_ext(build_ext):
                 ["make"],
             ])
 
-    def _build_lib(self, source_url, tarball_path, lib_dir, commands):
-        self._download_tarball(
-            source_url=source_url,
+    def _build_lib(self, tarball_path, lib_dir, commands):
+        self._extract_tarball(
             tarball_path=tarball_path,
             lib_dir=lib_dir,
         )
@@ -87,16 +77,10 @@ class jq_build_ext(build_ext):
         for command in commands:
             run_command(command)
 
-    def _download_tarball(self, source_url, tarball_path, lib_dir):
-        if os.path.exists(tarball_path):
-            os.unlink(tarball_path)
-        print("Downloading {}".format(source_url))
-        urlretrieve(source_url, tarball_path)
-        print("Downloaded {}".format(source_url))
-
+    def _extract_tarball(self, tarball_path, lib_dir):
         if os.path.exists(lib_dir):
             shutil.rmtree(lib_dir)
-        tarfile.open(tarball_path, "r:gz").extractall(dependency_path("."))
+        tarfile.open(tarball_path, "r:gz").extractall(_dep_build_path("."))
 
 
 jq_extension = Extension(
@@ -114,7 +98,7 @@ setup(
     name='jq',
     version='1.2.3',
     description='jq is a lightweight and flexible JSON processor.',
-    long_description=read("README.rst"),
+    long_description=_read("README.rst"),
     author='Michael Williamson',
     url='http://github.com/mwilliamson/jq.py',
     python_requires='>=3.5',
