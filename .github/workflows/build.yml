@@ -78,7 +78,6 @@ jobs:
 
     needs: build_wheels_matrix
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')
 
     strategy:
       matrix: ${{ fromJson(needs.build_wheels_matrix.outputs.matrix) }}
@@ -99,7 +98,21 @@ jobs:
         platforms: all
 
     - name: Build wheels
+      if: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/') }}
       uses: pypa/cibuildwheel@v2.9.0
+      env:
+        CIBW_ARCHS: ${{ matrix.CIBW_ARCHS }}
+        CIBW_BUILD: ${{ matrix.CIBW_BUILD }}
+        CIBW_BEFORE_BUILD: "pip install cython==0.29.32 && cython {project}/jq.pyx"
+        CIBW_TEST_REQUIRES: "-r test-requirements.txt"
+        CIBW_TEST_COMMAND: "py.test {project}/tests"
+
+    - name: Print build identifiers
+      if: ${{ !(github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
+      run: |
+        python -m pip install cibuildwheel==2.9.0
+        python -m cibuildwheel --print-build-identifiers
+
       env:
         CIBW_ARCHS: ${{ matrix.CIBW_ARCHS }}
         CIBW_BUILD: ${{ matrix.CIBW_BUILD }}
