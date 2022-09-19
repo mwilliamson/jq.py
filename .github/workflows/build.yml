@@ -128,5 +128,6 @@ jobs:
         python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
 
     - uses: actions/upload-artifact@v2
+      if: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/') }}
       with:
         path: ./wheelhouse/*.whl
