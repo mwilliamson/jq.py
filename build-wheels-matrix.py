@@ -28,15 +28,13 @@ def _main():
         "include": [
             {
                 "os": "ubuntu-20.04",
-                "CIBW_ARCHS": _configuration_to_architecture(configuration).value,
-                "CIBW_BUILD": configuration.identifier,
+                "cibw-only": configuration.identifier,
             }
             for configuration in linux_python_configurations
         ] + [
             {
                 "os": "macos-10.15",
-                "CIBW_ARCHS": _configuration_to_architecture(configuration).value,
-                "CIBW_BUILD": configuration.identifier,
+                "cibw-only": configuration.identifier,
             }
             for configuration in macos_python_configurations
         ]
