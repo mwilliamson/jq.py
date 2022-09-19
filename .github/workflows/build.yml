@@ -110,17 +110,16 @@ jobs:
       with:
         platforms: all
 
+    - name: Print build identifiers
+      run: |
+        python -m pip install cibuildwheel==2.10.1
+        python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
+
     - name: Build wheels
       if: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/') }}
       uses: pypa/cibuildwheel@v2.10.1
       with:
         only: ${{ matrix.cibw-only }}
-
-    - name: Print build identifiers
-      if: ${{ !(github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
-      run: |
-        python -m pip install cibuildwheel==2.10.1
-        python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
 
     - uses: actions/upload-artifact@v2
       if: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/') }}
