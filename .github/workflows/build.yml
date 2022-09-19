@@ -72,8 +72,8 @@ jobs:
 
       - id: set-matrix
         env:
-          CIBW_ARCHS_LINUX: "auto64 aarch64"
-          CIBW_ARCHS_MACOS: "auto64"
+          CIBW_ARCHS_LINUX: "auto aarch64"
+          CIBW_ARCHS_MACOS: "auto"
         run: |
           MATRIX=$(
             {
