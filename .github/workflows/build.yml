@@ -71,7 +71,19 @@ jobs:
         run: python -m pip install cibuildwheel==2.10.1
 
       - id: set-matrix
-        run: python build-wheels-matrix.py
+        env:
+          CIBW_ARCHS_LINUX: "auto64 aarch64"
+          CIBW_ARCHS_MACOS: "auto64"
+        run: |
+          MATRIX=$(
+            {
+              cibuildwheel --print-build-identifiers --platform linux \
+                | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-20.04"}/' \
+              && cibuildwheel --print-build-identifiers --platform macos \
+                | sed 's/.*/{"cibw-only": "&", "os": "macos-10.15" }/'
+            } | jq --slurp --compact-output '{"include": .}'
+          )
+          echo ::set-output name=matrix::"$MATRIX"
 
   build_wheels:
     name: Build ${{ matrix.cibw-only }} wheel
