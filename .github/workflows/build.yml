@@ -95,11 +95,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
-    env:
-      CIBW_BEFORE_BUILD: "pip install cython==0.29.32 && cython {project}/jq.pyx"
-      CIBW_TEST_REQUIRES: "-r test-requirements.txt"
-      CIBW_TEST_COMMAND: "py.test {project}/tests"
-
     steps:
 
     - uses: actions/checkout@v2
