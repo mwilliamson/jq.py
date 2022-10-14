@@ -83,7 +83,7 @@ jobs:
                 | sed 's/.*/{"cibw-only": "&", "os": "macos-11" }/'
             } | jq --slurp --compact-output '{"include": .}'
           )
-          echo ::set-output name=matrix::"$MATRIX"
+          echo matrix="$MATRIX" >> $GITHUB_OUTPUT
 
   build_wheels:
     name: Build ${{ matrix.cibw-only }} wheel
