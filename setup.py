@@ -98,7 +98,8 @@ setup_kwargs = {}
 if os.environ.get("JQPY_USE_SYSTEM_LIBRARIES"):
     jq_extension = Extension(
         "jq",
-        sources=["jq.c"],
+        sources=[],
+        headers=["jq.h"],
         libraries=["jq"],
     )
 else:
