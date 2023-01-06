@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.4.0
+-----
+
+* Update handling of non-finite numbers to match the behaviour jq 1.6.
+  Specifically, NaN is outputted as None, Inf is outputted as DBL_MAX,
+  and -Inf is outputted as DBL_MIN.
+
 1.3.0
 -----
 

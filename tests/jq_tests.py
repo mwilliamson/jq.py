@@ -20,6 +20,27 @@ def test_can_add_one_to_each_element_of_an_array():
     )
 
 
+def test_nan_is_outputted_as_null():
+    assert_equal(
+        None,
+        jq.compile("0/0").input(0).first(),
+    )
+
+
+def test_positive_infinity_is_outputted_as_positive_max_double():
+    assert_equal(
+        1.7976931348623157e+308,
+        jq.compile(". * 2").input(1.7976931348623157e+308).first(),
+    )
+
+
+def test_negative_infinity_is_outputted_as_negative_max_double():
+    assert_equal(
+        -1.7976931348623157e+308,
+        jq.compile(". * 2").input(-1.7976931348623157e+308).first(),
+    )
+
+
 def test_can_use_regexes():
     assert_equal(
         True,

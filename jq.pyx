@@ -2,7 +2,8 @@ import json
 import threading
 
 from cpython.bytes cimport PyBytes_AsString
-from libc.math cimport modf
+from libc.float cimport DBL_MAX
+from libc.math cimport INFINITY, modf
 
 
 cdef extern from "jv.h":
@@ -83,7 +84,13 @@ cdef object _jv_to_python(jv value):
         python_value = True
     elif kind == JV_KIND_NUMBER:
         number_value = jv_number_value(value)
-        if _is_integer(number_value):
+        if number_value == INFINITY:
+            python_value = DBL_MAX
+        elif number_value == -INFINITY:
+            python_value = -DBL_MAX
+        elif number_value != number_value:
+            python_value = None
+        elif _is_integer(number_value):
             python_value = int(number_value)
         else:
             python_value = number_value
