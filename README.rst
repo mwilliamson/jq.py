@@ -61,7 +61,7 @@ Cygwin
 
 If on Cygwin, you probably want to install
 `apt-cyg <https://github.com/transcode-open/apt-cyg>`_.
-Once apt-get is installed, you can install the remaining dependencies with:
+Once apt-cyg is installed, you can install the remaining dependencies with:
 
 .. code-block:: sh
 
