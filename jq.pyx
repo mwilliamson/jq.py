@@ -173,7 +173,7 @@ cdef void _store_error(void* store_ptr, jv error):
     # TODO: handle errors not of JV_KIND_STRING
     cdef _ErrorStore store = <_ErrorStore>store_ptr
     if jv_get_kind(error) == JV_KIND_STRING:
-        store.store_error(jv_string_value(error).decode("utf8"))
+        store.store_error(jv_string_to_py_string(error))
 
     jv_free(error)
 
@@ -332,7 +332,7 @@ cdef class _ResultIterator(object):
                 return _jv_to_python(result)
             elif jv_invalid_has_msg(jv_copy(result)):
                 error_message = jv_invalid_get_msg(result)
-                message = jv_string_value(error_message).decode("utf8")
+                message = jv_string_to_py_string(error_message)
                 jv_free(error_message)
                 raise ValueError(message)
             else:
@@ -347,7 +347,7 @@ cdef class _ResultIterator(object):
             return 0
         elif jv_invalid_has_msg(jv_copy(value)):
             error_message = jv_invalid_get_msg(value)
-            message = jv_string_value(error_message).decode("utf8")
+            message = jv_string_to_py_string(error_message)
             jv_free(error_message)
             raise ValueError(u"parse error: " + message)
         else:
@@ -379,7 +379,7 @@ def jq(object program):
     return compile(program)
 
 
-cdef str jv_string_to_py_string(jv value):
+cdef unicode jv_string_to_py_string(jv value):
     cdef int length = jv_string_length_bytes(jv_copy(value))
     cdef char* string_value = jv_string_value(value)
     return string_value[:length].decode("utf-8")
