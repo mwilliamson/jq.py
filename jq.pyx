@@ -28,6 +28,7 @@ cdef extern from "jv.h":
     int jv_invalid_has_msg(jv)
     char* jv_string_value(jv)
     jv jv_dump_string(jv, int flags)
+    int jv_string_length_bytes(jv)
     int jv_is_integer(jv)
     double jv_number_value(jv)
     int jv_array_length(jv)
@@ -95,7 +96,7 @@ cdef object _jv_to_python(jv value):
         else:
             python_value = number_value
     elif kind == JV_KIND_STRING:
-        python_value = jv_string_value(value).decode("utf-8")
+        python_value = jv_string_to_py_string(value)
     elif kind == JV_KIND_ARRAY:
         python_value = []
         for idx in range(0, jv_array_length(jv_copy(value))):
@@ -376,3 +377,9 @@ def text(program, value=_NO_VALUE, text=_NO_VALUE):
 # Support the 0.1.x API for backwards compatibility
 def jq(object program):
     return compile(program)
+
+
+cdef str jv_string_to_py_string(jv value):
+    cdef int length = jv_string_length_bytes(jv_copy(value))
+    cdef char* string_value = jv_string_value(value)
+    return string_value[:length].decode("utf-8")
