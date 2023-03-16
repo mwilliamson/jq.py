@@ -307,7 +307,7 @@ cdef class _ResultIterator(object):
         self._jq_state_pool.release(self._jq)
         jv_parser_free(self._parser)
 
-    def __cinit__(self, _JqStatePool jq_state_pool, object bytes_input):
+    def __cinit__(self, _JqStatePool jq_state_pool, bytes bytes_input):
         self._jq_state_pool = jq_state_pool
         self._jq = jq_state_pool.acquire()
         self._bytes_input = bytes_input
