@@ -109,7 +109,7 @@ cdef object _jv_to_python(jv value):
             property_key = jv_object_iter_key(value, idx)
             property_value = jv_object_iter_value(value, idx)
             try:
-                python_value[jv_string_value(property_key).decode("utf-8")] = \
+                python_value[jv_string_to_py_string(property_key)] = \
                     _jv_to_python(property_value)
             finally:
                 jv_free(property_key)

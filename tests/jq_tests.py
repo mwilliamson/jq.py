@@ -308,6 +308,13 @@ class TestJvToPython(object):
         assert_equal({"a": {}, "b": {}}, program.input(text='{"a": {}, "b": {}}').first())
         assert_equal({"": {"": {}}}, program.input(text='{"": {"": {}}}').first())
 
+    def test_object_keys_containing_null_characters_are_preserved(self):
+        program = jq.compile(".")
+
+        result = program.input({"a\x00b": None}).first()
+
+        assert_equal({"a\x00b": None}, result)
+
 
 class TestConvenienceFunctions(object):
     def test_first_function_with_json_value_input_returns_first_output_element(self):
