@@ -300,7 +300,7 @@ cdef class _ResultIterator(object):
     cdef _JqStatePool _jq_state_pool
     cdef jq_state* _jq
     cdef jv_parser* _parser
-    cdef object _bytes_input
+    cdef bytes _bytes_input
     cdef bint _ready
 
     def __dealloc__(self):
