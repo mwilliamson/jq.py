@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.4.1
+-----
+
+* Improve handling of null bytes in program inputs and outputs.
+
 1.4.0
 -----
 
