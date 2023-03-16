@@ -314,7 +314,7 @@ cdef class _ResultIterator(object):
         self._ready = False
         cdef jv_parser* parser = jv_parser_new(0)
         cdef char* cbytes_input = PyBytes_AsString(bytes_input)
-        jv_parser_set_buf(parser, cbytes_input, len(cbytes_input), 0)
+        jv_parser_set_buf(parser, cbytes_input, len(bytes_input), 0)
         self._parser = parser
 
     def __iter__(self):

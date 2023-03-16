@@ -247,10 +247,17 @@ class TestJvToPython(object):
         assert_equal("x", program.input(text='"x"').first())
         assert_equal("xyz", program.input(text='"xyz"').first())
 
-    def test_strings_containing_null_characters_are_preserved(self):
+    def test_given_json_value_then_string_containing_null_characters_are_preserved(self):
         program = jq.compile(".")
 
         result = program.input("a\x00b").first()
+
+        assert_equal("a\x00b", result)
+
+    def test_given_json_text_then_strings_containing_null_characters_are_preserved(self):
+        program = jq.compile(".")
+
+        result = program.input(text='"a\x00b"').first()
 
         assert_equal("a\x00b", result)
 
