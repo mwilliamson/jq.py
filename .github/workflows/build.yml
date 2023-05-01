@@ -47,7 +47,7 @@ jobs:
       - name: Check metadata
         run: python -m twine check dist/*
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
 
@@ -121,7 +121,7 @@ jobs:
       with:
         only: ${{ matrix.cibw-only }}
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' }}
       with:
         path: ./wheelhouse/*.whl
