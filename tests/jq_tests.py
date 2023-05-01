@@ -97,6 +97,14 @@ def test_input_can_be_text_with_multiple_values_separated_by_newlines():
     assert_equal([1, 2, 3], result)
 
 
+def test_slurping_empty_input_text_reads_input_as_empty_array():
+    program = jq.compile(".")
+
+    result = program.input_text("1\n2\n3\n", slurp=True).all()
+
+    assert_equal([[1, 2, 3]], result)
+
+
 def test_slurping_input_text_reads_input_as_single_array():
     program = jq.compile(".")
 
