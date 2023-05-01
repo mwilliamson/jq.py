@@ -246,9 +246,17 @@ cdef class _Program(object):
     def input(self, value=_NO_VALUE, text=_NO_VALUE):
         if (value is _NO_VALUE) == (text is _NO_VALUE):
             raise ValueError("Either the value or text argument should be set")
-        string_input = text if text is not _NO_VALUE else json.dumps(value)
 
-        return _ProgramWithInput(self._jq_state_pool, string_input.encode("utf8"))
+        if text is not _NO_VALUE:
+            return self.input_text(text)
+        else:
+            return self.input_value(value)
+
+    def input_value(self, value):
+        return self.input_text(json.dumps(value))
+
+    def input_text(self, text):
+        return _ProgramWithInput(self._jq_state_pool, text.encode("utf8"))
 
     @property
     def program_string(self):

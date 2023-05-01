@@ -65,6 +65,22 @@ def test_when_text_argument_is_used_then_input_is_treated_as_json_text():
     )
 
 
+def test_input_can_be_value():
+    program = jq.compile(".")
+
+    result = program.input_value("42").first()
+
+    assert_equal("42", result)
+
+
+def test_input_can_be_text():
+    program = jq.compile(".")
+
+    result = program.input_text("42").first()
+
+    assert_equal(42, result)
+
+
 def test_when_text_method_is_used_on_result_then_output_is_serialised_to_json_string():
     assert_equal(
         '"42"',
