@@ -1,3 +1,4 @@
+import io
 import json
 import threading
 
@@ -254,6 +255,13 @@ cdef class _Program(object):
 
     def input_value(self, value):
         return self.input_text(json.dumps(value))
+
+    def input_values(self, values):
+        fileobj = io.StringIO()
+        for value in values:
+            json.dump(value, fileobj)
+            fileobj.write("\n")
+        return self.input_text(fileobj.getvalue())
 
     def input_text(self, text):
         return _ProgramWithInput(self._jq_state_pool, text.encode("utf8"))

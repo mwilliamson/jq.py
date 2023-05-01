@@ -73,12 +73,28 @@ def test_input_can_be_value():
     assert_equal("42", result)
 
 
+def test_input_can_be_multiple_values():
+    program = jq.compile(".")
+
+    result = program.input_values([1, 2, 3]).all()
+
+    assert_equal([1, 2, 3], result)
+
+
 def test_input_can_be_text():
     program = jq.compile(".")
 
     result = program.input_text("42").first()
 
     assert_equal(42, result)
+
+
+def test_input_can_be_text_with_multiple_values_separated_by_newlines():
+    program = jq.compile(".")
+
+    result = program.input_text("1\n2\n3").all()
+
+    assert_equal([1, 2, 3], result)
 
 
 def test_when_text_method_is_used_on_result_then_output_is_serialised_to_json_string():
@@ -139,13 +155,6 @@ def test_iterators_from_same_program_and_input_are_independent():
     assert_equal(4, next(first))
     assert_equal(3, next(second))
     assert_equal(4, next(second))
-
-
-def test_multiple_inputs_in_text_input_are_separated_by_newlines():
-    assert_equal(
-        [2, 3, 4],
-        jq.compile(".+1").input(text="1\n2\n3").all()
-    )
 
 
 def test_value_error_is_raised_if_program_is_invalid():
