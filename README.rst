@@ -112,7 +112,7 @@ Pass ``slurp=True`` to ``.input_text()`` to read the entire input into an array:
 You can also call the older ``input()`` method by passing:
 
 * a valid JSON value, such as the values returned from ``json.load``, as a positional argument
-* unparsed JSON text passed as the keyword argument ``text``
+* unparsed JSON text as the keyword argument ``text``
 
 For instance:
 
