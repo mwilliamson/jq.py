@@ -337,7 +337,6 @@ cdef class _ResultIterator(object):
         return self
 
     def __next__(self):
-        cdef int dumpopts = 0
         while True:
             if not self._ready:
                 self._ready_next_input()
