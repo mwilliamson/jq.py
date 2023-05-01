@@ -99,6 +99,15 @@ Call ``.input_text()`` to supply unparsed JSON text:
     assert jq.compile(".").input_text("0.42").first() == 0.42
     assert jq.compile(".").input_text("true").first() == True
     assert jq.compile(".").input_text('"hello"').first() == "hello"
+    assert jq.compile(".").input_text("1\n2\n3").all() == [1, 2, 3]
+
+Pass ``slurp=True`` to ``.input_text()`` to read the entire input into an array:
+
+.. code-block:: python
+
+    import jq
+
+    assert jq.compile(".").input_text("1\n2\n3", slurp=True).first() == [1, 2, 3]
 
 You can also call the older ``input()`` method by passing:
 

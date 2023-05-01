@@ -32,6 +32,8 @@ cdef extern from "jv.h":
     int jv_string_length_bytes(jv)
     int jv_is_integer(jv)
     double jv_number_value(jv)
+    jv jv_array()
+    jv jv_array_append(jv, jv)
     int jv_array_length(jv)
     jv jv_array_get(jv, int)
     int jv_object_iter(jv)
@@ -263,8 +265,8 @@ cdef class _Program(object):
             fileobj.write("\n")
         return self.input_text(fileobj.getvalue())
 
-    def input_text(self, text):
-        return _ProgramWithInput(self._jq_state_pool, text.encode("utf8"))
+    def input_text(self, text, *, slurp=False):
+        return _ProgramWithInput(self._jq_state_pool, text.encode("utf8"), slurp=slurp)
 
     @property
     def program_string(self):
@@ -287,16 +289,18 @@ cdef class _Program(object):
 cdef class _ProgramWithInput(object):
     cdef _JqStatePool _jq_state_pool
     cdef object _bytes_input
+    cdef bint _slurp
 
-    def __cinit__(self, jq_state_pool, bytes_input):
+    def __cinit__(self, jq_state_pool, bytes_input, *, bint slurp):
         self._jq_state_pool = jq_state_pool
         self._bytes_input = bytes_input
+        self._slurp = slurp
 
     def __iter__(self):
         return self._make_iterator()
 
     cdef _ResultIterator _make_iterator(self):
-        return _ResultIterator(self._jq_state_pool, self._bytes_input)
+        return _ResultIterator(self._jq_state_pool, self._bytes_input, slurp=self._slurp)
 
     def text(self):
         # Performance testing suggests that using _jv_to_python (within the
@@ -317,16 +321,18 @@ cdef class _ResultIterator(object):
     cdef jq_state* _jq
     cdef jv_parser* _parser
     cdef bytes _bytes_input
+    cdef bint _slurp
     cdef bint _ready
 
     def __dealloc__(self):
         self._jq_state_pool.release(self._jq)
         jv_parser_free(self._parser)
 
-    def __cinit__(self, _JqStatePool jq_state_pool, bytes bytes_input):
+    def __cinit__(self, _JqStatePool jq_state_pool, bytes bytes_input, *, bint slurp):
         self._jq_state_pool = jq_state_pool
         self._jq = jq_state_pool.acquire()
         self._bytes_input = bytes_input
+        self._slurp = slurp
         self._ready = False
         cdef jv_parser* parser = jv_parser_new(0)
         cdef char* cbytes_input = PyBytes_AsString(bytes_input)
@@ -356,10 +362,28 @@ cdef class _ResultIterator(object):
 
     cdef bint _ready_next_input(self) except 1:
         cdef int jq_flags = 0
+        cdef jv value
+
+        if self._slurp:
+            value = jv_array()
+
+            while True:
+                try:
+                    next_value = self._parse_next_input()
+                    value = jv_array_append(value, next_value)
+                except StopIteration:
+                    self._slurp = False
+                    break
+        else:
+            value = self._parse_next_input()
+
+        jq_start(self._jq, value, jq_flags)
+        return 0
+
+    cdef inline jv _parse_next_input(self) except *:
         cdef jv value = jv_parser_next(self._parser)
         if jv_is_valid(value):
-            jq_start(self._jq, value, jq_flags)
-            return 0
+            return value
         elif jv_invalid_has_msg(jv_copy(value)):
             error_message = jv_invalid_get_msg(value)
             message = jv_string_to_py_string(error_message)

@@ -97,6 +97,30 @@ def test_input_can_be_text_with_multiple_values_separated_by_newlines():
     assert_equal([1, 2, 3], result)
 
 
+def test_slurping_input_text_reads_input_as_single_array():
+    program = jq.compile(".")
+
+    result = program.input_text("1\n2\n3\n", slurp=True).all()
+
+    assert_equal([[1, 2, 3]], result)
+
+
+def test_can_slurp_without_trailing_newline():
+    program = jq.compile(".")
+
+    result = program.input_text("1\n2\n3", slurp=True).all()
+
+    assert_equal([[1, 2, 3]], result)
+
+
+def test_can_slurp_and_produce_multiple_output_values():
+    program = jq.compile(".[]")
+
+    result = program.input_text("1\n2\n3", slurp=True).all()
+
+    assert_equal([1, 2, 3], result)
+
+
 def test_when_text_method_is_used_on_result_then_output_is_serialised_to_json_string():
     assert_equal(
         '"42"',
