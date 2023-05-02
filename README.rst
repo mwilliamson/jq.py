@@ -88,6 +88,14 @@ Call ``.input_value()`` to supply a valid JSON value, such as the values returne
     assert jq.compile(".").input_value(True).first() == True
     assert jq.compile(".").input_value("hello").first() == "hello"
 
+Call ``.input_values()`` to supply multiple valid JSON values, such as the values returned from ``json.load``:
+
+.. code-block:: python
+
+    import jq
+
+    assert jq.compile(".+5").input_values([1, 2, 3]).all() == [6, 7, 8]
+
 Call ``.input_text()`` to supply unparsed JSON text:
 
 .. code-block:: python
