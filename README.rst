@@ -131,7 +131,7 @@ For instance:
     assert jq.compile(".").input("hello").first() == "hello"
     assert jq.compile(".").input(text='"hello"').first() == "hello"
 
-Return methods
+Output methods
 ~~~~~~~~~~~~~~
 
 Calling ``first()`` on the result will run the program with the given input,
