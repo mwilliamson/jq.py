@@ -28,5 +28,5 @@ _virtualenv:
 	_virtualenv/bin/pip install --upgrade wheel
 
 jq.c: _virtualenv jq.pyx
-	_virtualenv/bin/pip install cython==0.29.32
+	_virtualenv/bin/pip install cython==0.29.35
 	_virtualenv/bin/cython jq.pyx
