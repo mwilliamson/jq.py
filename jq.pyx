@@ -27,6 +27,7 @@ cdef extern from "jv.h":
     void jv_free(jv)
     jv jv_invalid_get_msg(jv)
     int jv_invalid_has_msg(jv)
+    jv jv_string(char*)
     char* jv_string_value(jv)
     jv jv_dump_string(jv, int flags)
     int jv_string_length_bytes(jv)
@@ -41,6 +42,7 @@ cdef extern from "jv.h":
     int jv_object_iter_valid(jv, int)
     jv jv_object_iter_key(jv, int)
     jv jv_object_iter_value(jv, int)
+    jv jq_set_attr(jq_state*, jv, jv);
 
     cdef struct jv_parser:
         pass
@@ -130,19 +132,31 @@ cdef int _is_integer(double value):
     return fractional_part == 0
 
 
-def compile(object program, args=None):
+def compile(object program, args=None, library_search_path: list = None):
     cdef object program_bytes = program.encode("utf8")
-    return _Program(program_bytes, args=args)
+    return _Program(program_bytes, args=args, library_search_path=library_search_path)
 
 
 _compilation_lock = threading.Lock()
 
 
-cdef jq_state* _compile(object program_bytes, object args) except NULL:
+cdef jq_state* _compile(object program_bytes, object args, object library_search_path = None) except NULL:
     cdef jq_state *jq = jq_init()
     cdef _ErrorStore error_store
     cdef jv jv_args
     cdef int compiled
+
+    lsp_array = jv_array()
+    if not library_search_path:
+        library_search_path = [
+            '~/.jq',
+            '../lib/jq',
+            '../lib',
+        ]
+    for p in library_search_path:
+        lsp_array = jv_array_append(lsp_array, jv_string(bytes(str(p), 'utf-8')))
+    jq_set_attr(jq, jv_string('JQ_LIBRARY_PATH'), lsp_array)
+
     try:
         if not jq:
             raise Exception("jq_init failed")
@@ -212,10 +226,10 @@ cdef class _JqStatePool(object):
     cdef object _args
     cdef object _lock
 
-    def __cinit__(self, program_bytes, args):
+    def __cinit__(self, program_bytes, args, library_search_path: list = None):
         self._program_bytes = program_bytes
         self._args = args
-        self._jq_state = _compile(self._program_bytes, args=self._args)
+        self._jq_state = _compile(self._program_bytes, args=self._args, library_search_path=library_search_path)
         self._lock = threading.Lock()
 
     def __dealloc__(self):
@@ -242,9 +256,9 @@ cdef class _Program(object):
     cdef object _program_bytes
     cdef _JqStatePool _jq_state_pool
 
-    def __cinit__(self, program_bytes, args):
+    def __cinit__(self, program_bytes, args, library_search_path: list = None):
         self._program_bytes = program_bytes
-        self._jq_state_pool = _JqStatePool(program_bytes, args=args)
+        self._jq_state_pool = _JqStatePool(program_bytes, args=args, library_search_path=library_search_path)
 
     def input(self, value=_NO_VALUE, text=_NO_VALUE):
         if (value is _NO_VALUE) == (text is _NO_VALUE):
