@@ -9,3 +9,16 @@ tests_task:
   make_jq_c_script: make jq.c
 
   run_tests_script: tox -e py
+
+wheels_task:
+  env:
+    CIBW_SKIP: cp38-*
+
+  install_python_script: brew install python@3.11
+
+  install_cibuildwheel_script: python3 -m pip install cibuildwheel==2.12.3
+
+  build_wheels_script: cibuildwheel
+
+  wheels_artifacts:
+    path: ./wheelhouse/*.whl
