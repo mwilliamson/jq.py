@@ -1,0 +1,11 @@
+macos_instance:
+  image: ghcr.io/cirruslabs/macos-ventura-base:latest
+
+tests_task:
+  install_python_script: brew install python@3.11
+
+  install_tox_and_virtualenv_script: python3 -m pip install tox virtualenv
+
+  make_jq_c_script: make jq.c
+
+  run_tests_script: tox -e py
