@@ -1,5 +1,5 @@
 macos_instance:
-  image: ghcr.io/cirruslabs/macos-ventura-base:latest
+  image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
 
 tests_task:
   install_python_script: brew install python@3.11
@@ -12,7 +12,7 @@ tests_task:
 
 wheels_task:
   env:
-    CIBW_SKIP: cp38-*
+    CIBW_ARCHS_MACOS: arm64 x86_64
 
   install_python_script: brew install python@3.11
 
