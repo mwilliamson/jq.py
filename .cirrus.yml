@@ -12,7 +12,7 @@ tests_task:
 
 wheels_task:
   env:
-    CIBW_ARCHS_MACOS: arm64 x86_64
+    CIBW_ARCHS_MACOS: arm64
 
   install_python_script: brew install python@3.11
 
