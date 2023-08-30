@@ -1,6 +1,18 @@
 Changelog
 =========
 
+1.5.0
+-----
+
+* Add input_value, input_values and input_text methods as replacements for the
+  input method. The input method is still supported.
+
+* Add support for slurp when calling input_text.
+
+* Add support for Python 3.12.
+
+* Build macOS arm64 wheels.
+
 1.4.1
 -----
 
