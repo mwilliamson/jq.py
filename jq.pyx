@@ -172,7 +172,7 @@ cdef jq_state* _compile(object program_bytes, object args) except NULL:
     return jq
 
 
-cdef void _store_error(void* store_ptr, jv error):
+cdef void _store_error(void* store_ptr, jv error) noexcept:
     # TODO: handle errors not of JV_KIND_STRING
     cdef _ErrorStore store = <_ErrorStore>store_ptr
     if jv_get_kind(error) == JV_KIND_STRING:
