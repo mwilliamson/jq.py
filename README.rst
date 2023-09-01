@@ -15,7 +15,7 @@ On these platforms, you should be able to install jq with a normal pip install:
     pip install jq
 
 If a wheel is not available,
-the source for jq 1.6 is downloaded over HTTPS and built.
+the source for jq 1.6 is built.
 This requires:
 
 * Autoreconf
@@ -25,6 +25,9 @@ This requires:
 * libtool
 
 * Python headers.
+
+Alternatively, set the environment variable ``JQPY_USE_SYSTEM_LIBS`` to ``1`` when installing the package
+to use the libjq and libonig versions available on the system rather than building them.
 
 Debian, Ubuntu or relatives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,6 +1,14 @@
 Changelog
 =========
 
+1.6.0
+-----
+
+* Add support for building with Cython 3.
+
+* Add support for building with the system libjq and libonig instead of building
+  using the bundled source.
+
 1.5.0
 -----
 
