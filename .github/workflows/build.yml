@@ -32,7 +32,11 @@ jobs:
     - run: tox -e py
       if: ${{ !matrix.use-system-libjq }}
 
-    - run: JQPY_USE_SYSTEM_LIBJQ=1 tox -e py
+    - run: |
+        # Remove deps to make sure they're not being used
+        rm -r deps
+
+        JQPY_USE_SYSTEM_LIBJQ=1 tox -e py
       if: ${{ matrix.use-system-libjq }}
 
   build_sdist:
