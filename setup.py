@@ -32,7 +32,7 @@ oniguruma_lib_tarball_path = _dep_source_path("onig-{}.tar.gz".format(oniguruma_
 oniguruma_lib_build_dir = _dep_build_path("onig-{}".format(oniguruma_version))
 oniguruma_lib_install_dir = _dep_build_path("onig-install-{}".format(oniguruma_version))
 
-class jq_build_ext(build_ext):
+class jq_with_deps_build_ext(build_ext):
     def run(self):
         if not os.path.exists(_dep_build_path(".")):
             os.makedirs(_dep_build_path("."))
@@ -83,15 +83,28 @@ class jq_build_ext(build_ext):
         tarfile.open(tarball_path, "r:gz").extractall(_dep_build_path("."))
 
 
+use_system_libjq = bool(os.environ.get("JQPY_USE_SYSTEM_LIBJQ"))
+
+
+if use_system_libjq:
+    jq_build_ext = build_ext
+    link_args_deps = ["-ljq", "-lonig"]
+    extra_objects = []
+else:
+    jq_build_ext = jq_with_deps_build_ext
+    link_args_deps = []
+    extra_objects = [
+        os.path.join(jq_lib_dir, ".libs/libjq.a"),
+        os.path.join(oniguruma_lib_install_dir, "lib/libonig.a"),
+    ]
+
+
 jq_extension = Extension(
     "jq",
     sources=["jq.c"],
     include_dirs=[os.path.join(jq_lib_dir, "src")],
-    extra_link_args=["-lm"],
-    extra_objects=[
-        os.path.join(jq_lib_dir, ".libs/libjq.a"),
-        os.path.join(oniguruma_lib_install_dir, "lib/libonig.a"),
-    ],
+    extra_link_args=["-lm"] + link_args_deps,
+    extra_objects=extra_objects,
 )
 
 setup(

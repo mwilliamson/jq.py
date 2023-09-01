@@ -10,6 +10,11 @@ jobs:
       matrix:
         os: [ubuntu-20.04, macos-11]
         python-version: [3.5, 3.6, 3.7, 3.8, 3.9, "3.10", "3.11", "3.12-dev", "pypy-3.7"]
+        use-system-libjq: [false]
+        include:
+          - os: ubuntu-20.04
+            python-version: "3.11"
+            use-system-libjq: true
 
     steps:
 
@@ -25,6 +30,10 @@ jobs:
     - run: "make jq.c"
 
     - run: tox -e py
+      if: ${{ !matrix.use-system-libjq }}
+
+    - run: JQPY_USE_SYSTEM_LIBJQ=1 tox -e py
+      if: ${{ matrix.use-system-libjq }}
 
   build_sdist:
     name: Build source distribution
