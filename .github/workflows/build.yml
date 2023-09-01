@@ -36,6 +36,8 @@ jobs:
         # Remove deps to make sure they're not being used
         rm -r deps
 
+        sudo apt-get install -y libjq-dev libonig-dev
+
         JQPY_USE_SYSTEM_LIBJQ=1 tox -e py
       if: ${{ matrix.use-system-libjq }}
 
