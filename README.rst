@@ -2,7 +2,7 @@ jq.py: a lightweight and flexible JSON processor
 ================================================
 
 This project contains Python bindings for
-`jq <http://stedolan.github.io/jq/>`_.
+`jq <http://stedolan.github.io/jq/>`_ 1.7.
 
 Installation
 ------------
@@ -15,7 +15,7 @@ On these platforms, you should be able to install jq with a normal pip install:
     pip install jq
 
 If a wheel is not available,
-the source for jq 1.6 is built.
+the source for jq 1.7 is built.
 This requires:
 
 * Autoreconf

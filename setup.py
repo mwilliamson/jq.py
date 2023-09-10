@@ -24,10 +24,10 @@ def _read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-jq_lib_tarball_path = _dep_source_path("jq-1.6.tar.gz")
-jq_lib_dir = _dep_build_path("jq-1.6")
+jq_lib_tarball_path = _dep_source_path("jq-1.7.tar.gz")
+jq_lib_dir = _dep_build_path("jq-1.7")
 
-oniguruma_version = "6.9.4"
+oniguruma_version = "6.9.8"
 oniguruma_lib_tarball_path = _dep_source_path("onig-{}.tar.gz".format(oniguruma_version))
 oniguruma_lib_build_dir = _dep_build_path("onig-{}".format(oniguruma_version))
 oniguruma_lib_install_dir = _dep_build_path("onig-install-{}".format(oniguruma_version))

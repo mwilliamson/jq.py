@@ -4,6 +4,8 @@ Changelog
 1.6.0
 -----
 
+* Update to jq 1.7.
+
 * Add support for building with Cython 3.
 
 * Add support for building with the system libjq and libonig instead of building
