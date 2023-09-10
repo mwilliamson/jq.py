@@ -113,7 +113,7 @@ setup(
     description='jq is a lightweight and flexible JSON processor.',
     long_description=_read("README.rst"),
     author='Michael Williamson',
-    url='http://github.com/mwilliamson/jq.py',
+    url='https://github.com/mwilliamson/jq.py',
     python_requires='>=3.5',
     license='BSD 2-Clause',
     ext_modules = [jq_extension],
