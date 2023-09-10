@@ -11,6 +11,8 @@ Changelog
 * Add support for building with the system libjq and libonig instead of building
   using the bundled source.
 
+* Include tests in sdist.
+
 1.5.0
 -----
 
