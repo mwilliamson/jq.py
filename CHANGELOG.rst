@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.7.0
+-----
+
+* Include tox.ini in sdist.
+
 1.6.0
 -----
 
