@@ -41,6 +41,8 @@ class jq_with_deps_build_ext(build_ext):
             commands=[
                 [r"C:\Program Files\Git\bin\bash.exe", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
                 ["cat", "Makefile"],
+                [r"C:\Program Files\Git\bin\bash.exe", "-c", "which sed"],
+                ["sh", "-c", "which sed"],
                 ["make", "V=1"],
             ])
 
