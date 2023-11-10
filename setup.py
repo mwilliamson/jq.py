@@ -40,7 +40,7 @@ class jq_with_deps_build_ext(build_ext):
             lib_dir=jq_lib_dir,
             commands=[
                 ["sh", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
-                ["make", "SHELL=/bin/bash -x"],
+                ["make", "V=1"],
             ])
 
     def _build_lib(self, tarball_path, lib_dir, commands):
