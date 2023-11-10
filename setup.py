@@ -27,36 +27,19 @@ def _read(fname):
 jq_lib_tarball_path = _dep_source_path("jq-1.7.tar.gz")
 jq_lib_dir = _dep_build_path("jq-1.7")
 
-oniguruma_version = "6.9.8"
-oniguruma_lib_tarball_path = _dep_source_path("onig-{}.tar.gz".format(oniguruma_version))
-oniguruma_lib_build_dir = _dep_build_path("onig-{}".format(oniguruma_version))
-oniguruma_lib_install_dir = _dep_build_path("onig-install-{}".format(oniguruma_version))
-
 class jq_with_deps_build_ext(build_ext):
     def run(self):
         if not os.path.exists(_dep_build_path(".")):
             os.makedirs(_dep_build_path("."))
-        self._build_oniguruma()
         self._build_libjq()
         build_ext.run(self)
-
-    def _build_oniguruma(self):
-        self._build_lib(
-            tarball_path=oniguruma_lib_tarball_path,
-            lib_dir=oniguruma_lib_build_dir,
-            commands=[
-                ["./configure", "CFLAGS=-fPIC", "--prefix=" + oniguruma_lib_install_dir],
-                ["make"],
-                ["make", "install"],
-            ])
-
 
     def _build_libjq(self):
         self._build_lib(
             tarball_path=jq_lib_tarball_path,
             lib_dir=jq_lib_dir,
             commands=[
-                ["./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=" + oniguruma_lib_install_dir],
+                ["./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
                 ["make"],
             ])
 
@@ -95,7 +78,7 @@ else:
     link_args_deps = []
     extra_objects = [
         os.path.join(jq_lib_dir, ".libs/libjq.a"),
-        os.path.join(oniguruma_lib_install_dir, "lib/libonig.a"),
+        os.path.join(jq_lib_dir, "modules/oniguruma/src/.libs/libonig.a"),
     ]
 
 

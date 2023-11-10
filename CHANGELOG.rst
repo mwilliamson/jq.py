@@ -6,6 +6,8 @@ Changelog
 
 * Include tox.ini in sdist.
 
+* Use the version of oniguruma distributed with jq.
+
 1.6.0
 -----
 
