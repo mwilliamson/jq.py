@@ -24,4 +24,8 @@ jobs:
 
     - run: python -m cython jq.pyx
 
+    - run: where sed
+
+    - run: echo 1 | sed -e 's/\\/\\\\/g'
+
     - run: tox -e py
