@@ -31,7 +31,7 @@ jobs:
     - run: |
         tar xf jq-1.7.tar.gz
         cd jq-1.7
-        ./configure CFLAGS=-fPIC -pthread --disable-maintainer-mode --with-oniguruma=builtin
+        ./configure CFLAGS='-fPIC -pthread' --disable-maintainer-mode --with-oniguruma=builtin
         make
       shell: bash
       working-directory: deps
