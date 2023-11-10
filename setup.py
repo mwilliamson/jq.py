@@ -39,7 +39,7 @@ class jq_with_deps_build_ext(build_ext):
             tarball_path=jq_lib_tarball_path,
             lib_dir=jq_lib_dir,
             commands=[
-                ["./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
+                ["sh", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
                 ["make"],
             ])
 
