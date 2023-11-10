@@ -41,9 +41,23 @@ class jq_with_deps_build_ext(build_ext):
             commands=[
                 [r"C:\Program Files\Git\bin\bash.exe", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
                 ["cat", "Makefile"],
+
+                [r"C:\msys64\usr\bin\bash.exe", "-c", "which sed"],
                 [r"C:\Program Files\Git\bin\bash.exe", "-c", "which sed"],
                 ["sh", "-c", "which sed"],
+
+                [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
+                [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
+                ["sh", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
+
+                [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g'"""],
+                [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g'"""],
+                ["sh", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g'"""],
+
+                [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/\\n"/'"""],
+                [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/\\n"/'"""],
                 ["sh", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/\\n"/'"""],
+
                 ["make", "V=1"],
             ])
 
