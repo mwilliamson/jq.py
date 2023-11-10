@@ -39,8 +39,8 @@ class jq_with_deps_build_ext(build_ext):
             tarball_path=jq_lib_tarball_path,
             lib_dir=jq_lib_dir,
             commands=[
-                [r"C:\Program Files\Git\bin\bash.exe", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
-                ["cat", "Makefile"],
+                # ~ [r"C:\Program Files\Git\bin\bash.exe", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
+                # ~ ["cat", "Makefile"],
 
                 [r"C:\msys64\usr\bin\bash.exe", "-c", "which sed"],
                 [r"C:\Program Files\Git\bin\bash.exe", "-c", "which sed"],
@@ -53,6 +53,10 @@ class jq_with_deps_build_ext(build_ext):
                 [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
                 [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
                 ["sh", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
+
+                [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo sed 's/\\/\\\\/g'"""],
+                [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo sed 's/\\/\\\\/g'"""],
+                ["sh", "-c", r"""echo sed 's/\\/\\\\/g'"""],
 
                 [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g'"""],
                 [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g'"""],
