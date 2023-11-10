@@ -34,6 +34,6 @@ jobs:
         ./configure CFLAGS=-fPIC -pthread --disable-maintainer-mode --with-oniguruma=builtin
         make
       shell: bash
-      cwd: deps
+      working-directory: deps
 
     - run: tox -e py
