@@ -40,6 +40,7 @@ class jq_with_deps_build_ext(build_ext):
             lib_dir=jq_lib_dir,
             commands=[
                 ["sh", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
+                ["cat", "Makefile"],
                 ["make", "V=1"],
             ])
 
