@@ -33,7 +33,7 @@ jobs:
         cd jq-1.7
         ./configure CFLAGS='-fPIC -pthread' --disable-maintainer-mode --with-oniguruma=builtin
         which bash
-        make V=1 SHELL=/bin/bash
+        make V=1 SHELL=/usr/bin/bash
       shell: bash
       working-directory: deps
 
