@@ -43,6 +43,7 @@ class jq_with_deps_build_ext(build_ext):
                 ["cat", "Makefile"],
                 [r"C:\Program Files\Git\bin\bash.exe", "-c", "which sed"],
                 ["sh", "-c", "which sed"],
+                ["sh", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/\\n"/'"""],
                 ["make", "V=1"],
             ])
 
