@@ -56,7 +56,9 @@ class jq_with_deps_build_ext(build_ext):
 
         def run_command(args):
             print("Executing: %s" % ' '.join(args))
-            subprocess.check_call(args, cwd=lib_dir)
+            env = os.environ.copy()
+            env["CONFIG_SHELL"] = r"C:\Program Files\Git\bin\bash.exe"
+            subprocess.check_call(args, cwd=lib_dir, env=env)
 
         for command in commands:
             run_command(command)
