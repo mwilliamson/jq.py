@@ -29,6 +29,10 @@ jobs:
     - run: echo 1 | sed -e 's/\\/\\\\/g'
 
     - run: |
+        cd tmp
+        make build SHELL='C:\Program Files\Git\bin\bash.exe'
+
+    - run: |
         tar xf jq-1.7.tar.gz
         cd jq-1.7
         ./configure CFLAGS='-fPIC -pthread' --disable-maintainer-mode --with-oniguruma=builtin
