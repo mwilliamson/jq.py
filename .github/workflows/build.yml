@@ -28,4 +28,12 @@ jobs:
 
     - run: echo 1 | sed -e 's/\\/\\\\/g'
 
+    - run: |
+        tar xf jq-1.7.tar.gz
+        cd jq-1.7
+        ./configure CFLAGS=-fPIC -pthread --disable-maintainer-mode --with-oniguruma=builtin
+        make
+      shell: bash
+      cwd: deps
+
     - run: tox -e py
