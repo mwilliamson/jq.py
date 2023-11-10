@@ -46,6 +46,10 @@ class jq_with_deps_build_ext(build_ext):
                 [r"C:\Program Files\Git\bin\bash.exe", "-c", "which sed"],
                 ["sh", "-c", "which sed"],
 
+                [r"C:\msys64\usr\bin\bash.exe", "-c", "sed --version"],
+                [r"C:\Program Files\Git\bin\bash.exe", "-c", "sed --version"],
+                ["sh", "-c", "sed --version"],
+
                 [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
                 [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
                 ["sh", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
