@@ -28,7 +28,7 @@ jobs:
 
     - run: echo 1 | sed -e 's/\\/\\\\/g'
 
-    - run: echo 1 | 'C:\Program Files\Git\usr\bin\sed.exe' -e 's/\\/\\\\/g'
+    - run: echo 1 | 'C:\Program Files\Git\usr\bin\sed.exe' --debug -e 's/\\/\\\\/g'
       shell: bash
 
     - run: |
