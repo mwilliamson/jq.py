@@ -43,7 +43,7 @@ class jq_with_deps_build_ext(build_ext):
             tarball_path=jq_lib_tarball_path,
             lib_dir=jq_lib_dir,
             commands=[
-                [r"D:\a\_temp\setup-msys2\msys2.cmd", "-c", "./configure CFLAGS='-fPIC -pthread' --disable-maintainer-mode --with-oniguruma=builtin"],
+                [r"D:\a\_temp\setup-msys2\msys2.cmd", "-c", "./configure CFLAGS='-fPIC -pthread' --disable-maintainer-mode --disable-shared --enable-static --enable-all-static --with-oniguruma=builtin"],
                 [r"D:\a\_temp\setup-msys2\msys2.cmd", "-c", "make V=1"],
             ])
 
