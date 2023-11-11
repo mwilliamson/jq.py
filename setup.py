@@ -39,8 +39,8 @@ class jq_with_deps_build_ext(build_ext):
             tarball_path=jq_lib_tarball_path,
             lib_dir=jq_lib_dir,
             commands=[
-                ["msys2", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
-                ["msys2", "make", "V=1"],
+                [r"D:\a\_temp\setup-msys2\msys2.cmd", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
+                [r"D:\a\_temp\setup-msys2\msys2.cmd", "make", "V=1"],
             ])
 
     def _build_lib(self, tarball_path, lib_dir, commands):
