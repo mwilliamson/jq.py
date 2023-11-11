@@ -90,7 +90,7 @@ jq_extension = Extension(
     "jq",
     sources=["jq.c"],
     include_dirs=[os.path.join(jq_lib_dir, "src")],
-    extra_link_args=["-lm"] + link_args_deps,
+    extra_link_args=["-lm", "-lmingwex"] + link_args_deps,
     extra_objects=extra_objects,
 )
 
