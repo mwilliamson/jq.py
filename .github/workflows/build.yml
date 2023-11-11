@@ -39,13 +39,4 @@ jobs:
 
     - run: where.exe msys2
 
-    - run: |
-        tar xf jq-1.7.tar.gz
-        cd jq-1.7
-        ./configure CFLAGS='-fPIC -pthread' --disable-maintainer-mode --with-oniguruma=builtin
-        make
-        which make
-      shell: msys2 {0}
-      working-directory: deps
-
     - run: tox -e py
