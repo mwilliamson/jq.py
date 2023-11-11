@@ -35,6 +35,9 @@ jobs:
         cd tmp
         make --version
         where.exe make
+        choco install make
+        make --version
+        where.exe make
         make build SHELL='C:\msys64\usr\bin\bash.exe'
 
     - run: |
