@@ -32,6 +32,10 @@ class jq_with_deps_build_ext(build_ext):
         if not os.path.exists(_dep_build_path(".")):
             os.makedirs(_dep_build_path("."))
         self._build_libjq()
+        shutil.copyfile(
+            _dep_source_path("jq-1.7/src/jv.h"),
+            os.path.join(jq_lib_dir, "src/jv.h"),
+        )
         build_ext.run(self)
 
     def _build_libjq(self):
