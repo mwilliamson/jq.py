@@ -33,7 +33,7 @@ jobs:
 
     - run: |
         cd tmp
-        make build
+        make build SHELL='C:\Program Files\Git\bin\bash.EXE'
       shell: bash
 
     - run: |
