@@ -39,33 +39,7 @@ class jq_with_deps_build_ext(build_ext):
             tarball_path=jq_lib_tarball_path,
             lib_dir=jq_lib_dir,
             commands=[
-                # ~ [r"C:\Program Files\Git\bin\bash.exe", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
-                # ~ ["cat", "Makefile"],
-
-                [r"C:\msys64\usr\bin\bash.exe", "-c", "which sed"],
-                [r"C:\Program Files\Git\bin\bash.exe", "-c", "which sed"],
-                ["sh", "-c", "which sed"],
-
-                [r"C:\msys64\usr\bin\bash.exe", "-c", "sed --version"],
-                [r"C:\Program Files\Git\bin\bash.exe", "-c", "sed --version"],
-                ["sh", "-c", "sed --version"],
-
-                [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
-                [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
-                ["sh", "-c", r"""echo 1 | sed -e 's/a/b/g'"""],
-
-                [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo sed 's/\\/\\\\/g'"""],
-                [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo sed 's/\\/\\\\/g'"""],
-                ["sh", "-c", r"""echo sed 's/\\/\\\\/g'"""],
-
-                [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g'"""],
-                [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g'"""],
-                ["sh", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g'"""],
-
-                [r"C:\msys64\usr\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/\\n"/'"""],
-                [r"C:\Program Files\Git\bin\bash.exe", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/\\n"/'"""],
-                ["sh", "-c", r"""echo 1 | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^/"/' -e 's/$/\\n"/'"""],
-
+                [r"sh", "./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
                 ["make", "V=1"],
             ])
 
@@ -81,9 +55,7 @@ class jq_with_deps_build_ext(build_ext):
 
         def run_command(args):
             print("Executing: %s" % ' '.join(args))
-            env = os.environ.copy()
-            # ~ env["CONFIG_SHELL"] = r"C:\Program Files\Git\bin\bash.exe"
-            subprocess.check_call(args, cwd=lib_dir, env=env)
+            subprocess.check_call(args, cwd=lib_dir)
 
         for command in commands:
             run_command(command)
