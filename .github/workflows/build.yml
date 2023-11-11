@@ -33,7 +33,7 @@ jobs:
 
     - run: |
         cd tmp
-        make build SHELL='C:\Program Files\Git\bin\bash.exe'
+        make build SHELL='C:\msys64\usr\bin\bash.exe'
 
     - run: |
         tar xf jq-1.7.tar.gz
