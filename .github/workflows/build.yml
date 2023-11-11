@@ -39,4 +39,7 @@ jobs:
 
     - run: where.exe msys2
 
+    - run: where.exe tox
+
     - run: tox -e py
+      shell: msys2 {0}
