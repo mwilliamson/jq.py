@@ -33,6 +33,8 @@ jobs:
 
     - run: |
         cd tmp
+        export MSYS_NO_PATHCONV=1
+        export MSYS2_ARG_CONV_EXCL="*"
         make build SHELL='C:\Program Files\Git\bin\bash.EXE'
       shell: bash
 
