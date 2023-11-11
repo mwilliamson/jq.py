@@ -37,9 +37,4 @@ jobs:
         pacboy: >-
           toolchain:p
 
-    - run: where.exe msys2
-
-    - run: where.exe tox
-
-    - run: C:\hostedtoolcache\windows\Python\3.12.0\x64\Scripts\tox.exe -e py
-      shell: msys2 {0}
+    - run: tox -e py
