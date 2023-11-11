@@ -33,6 +33,11 @@ jobs:
 
     - run: |
         cd tmp
+        make build
+      shell: bash
+
+    - run: |
+        cd tmp
         make --version
         where.exe make
         choco install make
