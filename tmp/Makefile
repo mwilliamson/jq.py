@@ -1,3 +1,5 @@
+.SHELLFLAGS = --noprofile --norc -c
+
 build:
 	which sed
 	sed --version
