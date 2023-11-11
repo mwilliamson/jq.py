@@ -41,7 +41,7 @@ jobs:
         ls 'C:\ProgramData\chocolatey\bin'
         ls 'C:\ProgramData\chocolatey\lib\make'
         C:\ProgramData\chocolatey\bin\make.exe --version
-        C:\ProgramData\chocolatey\bin\make.exe build SHELL='C:\msys64\usr\bin\bash.exe'
+        C:\ProgramData\chocolatey\bin\make.exe build SHELL=C:\msys64\usr\bin\bash.exe
 
     - run: |
         tar xf jq-1.7.tar.gz
