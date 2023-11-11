@@ -28,6 +28,9 @@ jobs:
 
     - run: echo 1 | sed -e 's/\\/\\\\/g'
 
+    - run: echo 1 | sed -e 's/\\/\\\\/g'
+      shell: bash
+
     - run: |
         cd tmp
         make build SHELL='C:\Program Files\Git\bin\bash.exe'
