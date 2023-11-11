@@ -15,14 +15,14 @@ jobs:
 
     - uses: actions/checkout@v3
 
-    - name: Use Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+    #~ - name: Use Python ${{ matrix.python-version }}
+      #~ uses: actions/setup-python@v4
+      #~ with:
+        #~ python-version: ${{ matrix.python-version }}
 
-    - run: python -m pip install cython==0.29.35 tox virtualenv
+    #~ - run: python -m pip install cython==0.29.35 tox virtualenv
 
-    - run: python -m cython jq.pyx
+    #~ - run: python -m cython jq.pyx
 
     - run: where.exe sed
 
@@ -38,6 +38,8 @@ jobs:
         choco install make
         make --version
         where.exe make
+        ls 'C:\ProgramData\chocolatey\bin'
+        ls 'C:\ProgramData\chocolatey\lib\make'
         make build SHELL='C:\msys64\usr\bin\bash.exe'
 
     - run: |
