@@ -2,6 +2,7 @@ build:
 	which sed
 	sed --version
 	printf '%s\n' 's/\\/\\\\/g'
+	echo 1 | printf '%s\n' 's/\\/\\\\/g'
 	echo x > x
 	echo "SHELL:" $(SHELL)
 	echo 1 | echo "SHELL:" $(SHELL)
