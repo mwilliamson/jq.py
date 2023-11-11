@@ -1,5 +1,5 @@
 include README.rst
 include LICENSE
-include deps/*.tar.gz
+recursive-include deps *
 recursive-include tests *.py
 include tox.ini
