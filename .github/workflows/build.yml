@@ -42,8 +42,8 @@ jobs:
         cd jq-1.7
         ./configure CFLAGS='-fPIC -pthread' --disable-maintainer-mode --with-oniguruma=builtin
         make V=1
+        which make
       shell: msys2 {0}
       working-directory: deps
 
     - run: tox -e py
-      shell: msys2 {0}
