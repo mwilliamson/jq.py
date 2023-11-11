@@ -33,6 +33,8 @@ jobs:
 
     - run: |
         cd tmp
+        make --version
+        where.exe make
         make build SHELL='C:\msys64\usr\bin\bash.exe'
 
     - run: |
