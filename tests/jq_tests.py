@@ -319,9 +319,19 @@ class TestJvToPython(object):
     def test_given_json_text_then_strings_containing_null_characters_are_preserved(self):
         program = jq.compile(".")
 
-        result = program.input(text='"a\x00b"').first()
+        # Before jq 1.7.1, we expect jq to accept the literal null character.
+        # From jq 1.7.1, we expect jq to reject the literal null character.
 
-        assert_equal("a\x00b", result)
+        try:
+            result = program.input(text='"a\x00b"').first()
+
+            assert_equal("a\x00b", result)
+        except ValueError as error:
+            assert_equal(
+                "parse error: Invalid string: control characters from U+0000 " +
+                "through U+001F must be escaped at line 1, column 5",
+                str(error),
+            )
 
     def test_program_preserves_arrays(self):
         program = jq.compile(".")

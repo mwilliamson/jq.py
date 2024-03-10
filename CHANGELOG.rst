@@ -4,6 +4,8 @@ Changelog
 1.7.0
 -----
 
+* Update to jq 1.7.1.
+
 * Include tox.ini in sdist.
 
 * Use the version of oniguruma distributed with jq.

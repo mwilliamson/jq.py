@@ -24,8 +24,8 @@ def _read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-jq_lib_tarball_path = _dep_source_path("jq-1.7.tar.gz")
-jq_lib_dir = _dep_build_path("jq-1.7")
+jq_lib_tarball_path = _dep_source_path("jq-1.7.1.tar.gz")
+jq_lib_dir = _dep_build_path("jq-1.7.1")
 
 class jq_with_deps_build_ext(build_ext):
     def run(self):
