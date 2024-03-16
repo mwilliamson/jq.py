@@ -8,7 +8,7 @@ tests_task:
 
   make_jq_c_script: make jq.c
 
-  run_tests_script: tox -e py
+  run_tests_script: python3 -m tox -e py
 
 wheels_task:
   env:
@@ -18,7 +18,7 @@ wheels_task:
 
   install_cibuildwheel_script: python3 -m pip install cibuildwheel==2.15.0
 
-  build_wheels_script: cibuildwheel
+  build_wheels_script: python3 -m cibuildwheel
 
   wheels_artifacts:
     path: ./wheelhouse/*.whl
