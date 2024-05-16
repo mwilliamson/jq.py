@@ -246,24 +246,24 @@ cdef class _Program(object):
         self._program_bytes = program_bytes
         self._jq_state_pool = _JqStatePool(program_bytes, args=args)
 
-    def input(self, value=_NO_VALUE, text=_NO_VALUE):
+    def input(self, value=_NO_VALUE, text=_NO_VALUE, *, slurp=False):
         if (value is _NO_VALUE) == (text is _NO_VALUE):
             raise ValueError("Either the value or text argument should be set")
 
         if text is not _NO_VALUE:
-            return self.input_text(text)
+            return self.input_text(text, slurp=slurp)
         else:
-            return self.input_value(value)
+            return self.input_value(value, slurp=slurp)
 
-    def input_value(self, value):
-        return self.input_text(json.dumps(value))
+    def input_value(self, value, *, slurp=False):
+        return self.input_text(json.dumps(value), slurp=slurp)
 
-    def input_values(self, values):
+    def input_values(self, values, *, slurp=False):
         fileobj = io.StringIO()
         for value in values:
             json.dump(value, fileobj)
             fileobj.write("\n")
-        return self.input_text(fileobj.getvalue())
+        return self.input_text(fileobj.getvalue(), slurp=slurp)
 
     def input_text(self, text, *, slurp=False):
         return _ProgramWithInput(self._jq_state_pool, text.encode("utf8"), slurp=slurp)
