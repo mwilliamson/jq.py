@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import subprocess
 import tarfile
 import shutil
@@ -67,6 +68,8 @@ class jq_with_deps_build_ext(build_ext):
 
 use_system_libs = bool(os.environ.get("JQPY_USE_SYSTEM_LIBS"))
 use_prebuilt_libs = bool(os.environ.get("JQPY_USE_PREBUILT_LIBS"))
+print(f"use_system_libs={use_system_libs}")
+print(f"use_prebuilt_libs={use_prebuilt_libs}")
 
 if use_system_libs:
     jq_build_ext = build_ext
@@ -80,11 +83,10 @@ else:
         os.path.join(jq_lib_dir, "modules/oniguruma/src/.libs/libonig.a"),
     ]
 
-
 jq_extension = Extension(
     "jq",
     sources=["jq.c"],
-    define_macros=[("MS_WIN64", 1)] if os.name == 'nt' else [],
+    define_macros=[("MS_WIN64" , 1)] if os.name == 'nt' and sys.maxsize > 2**32  else None, # https://github.com/cython/cython/issues/2670
     include_dirs=[os.path.join(jq_lib_dir, "src")],
     extra_link_args=["-lm"] + (["-Wl,-Bstatic", "-lpthread", "-lshlwapi", "-static-libgcc"] if os.name == 'nt' else []) + link_args_deps,
     extra_objects=extra_objects,

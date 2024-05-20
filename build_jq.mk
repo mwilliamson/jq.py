@@ -1,9 +1,9 @@
 # makefile for building jq
-
-.PHONY: jq_tarball jq_src jq_lib
+.PHONY: jq_tarball jq_src jq_lib clean
 
 jq_build_parent:=_deps/build
-jq_version=$(shell echo $(shell ls deps/jq-*.tar.gz) | grep -oP 'jq-\K[\d.]+(?=.tar.gz)')
+
+jq_version:=$(shell echo $(shell ls deps/jq-*.tar.gz) | grep -oP 'jq-\K[\d.]+(?=.tar.gz)')
 jq_tarball_path:=deps/jq-$(jq_version).tar.gz
 jq_build_path:=$(jq_build_parent)/jq-$(jq_version)
 

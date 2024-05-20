@@ -89,14 +89,15 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: "auto aarch64"
           CIBW_ARCHS_MACOS: "auto"
+
         run: |
           MATRIX=$(
             {
               cibuildwheel --print-build-identifiers --platform linux \
-                | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-20.04"}/' \
+              | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-20.04"}/' \
               && cibuildwheel --print-build-identifiers --platform macos \
                 | sed 's/.*/{"cibw-only": "&", "os": "macos-13" }/' \
-              && cibuildwheel --print-build-identifiers --platform windows \
+              && env CIBW_SKIP="pp* cp36*" cibuildwheel --print-build-identifiers --platform windows \
                 | sed 's/.*/{"cibw-only": "&", "os": "windows-latest" }/' 
             } | jq --slurp --compact-output '{"include": .}'
           )
@@ -127,22 +128,23 @@ jobs:
       with:
         platforms: all
 
-    - name: Set up MSYS
+    - name: set up MSYS2
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
       with:
-        msystem: UCRT64
-        update: true
-        install: mingw-w64-ucrt-x86_64-gcc make
+        release: false
+        msystem: ${{ contains(matrix.cibw-only, 'win32') && 'mingw32' || 'ucrt64' }}
+        install: make mingw-w64-${{ contains(matrix.cibw-only, 'win32') && 'i686' || 'ucrt-x86_64' }}-gcc
 
-    - name: Setup windows build environment
+    - name: Setup windows build variables
       id: setup-build-win
       if: runner.os == 'Windows'
-      shell: msys2 {0}
+      shell:  msys2 {0}
       run: |
         JQ_VERSION=$(ls deps/jq-*.tar.gz | grep -oP 'jq-\K[\d.]+(?=.tar.gz)') 
         echo jq-lib-version="$JQ_VERSION" >> $GITHUB_OUTPUT
-        echo use-prebuilt-jq=1 >>$GITHUB_OUTPUT
+        echo arch=$( grep -o 'win_amd64\|win32' <<< ${{matrix.cibw-only}}) >> $GITHUB_OUTPUT
+        ${{ contains(matrix.cibw-only, 'win32') && 'echo "C:/msys64/mingw32/bin" >> $GITHUB_PATH' || 'echo no need to set PATH for win_amd64' }}
         printf "[build]\ncompiler=mingw32" > setup.cfg
 
     - name: Cache pre-built jq lib
@@ -151,13 +153,12 @@ jobs:
       uses: actions/cache@v4
       with:
         path: _deps/build
-        key: ${{ runner.os }}-prebuilt-jq-${{steps.setup-build-win.outputs.jq-lib-version}}
+        key: prebuilt-jq-${{steps.setup-build-win.outputs.jq-lib-version}}-${{ steps.setup-build-win.outputs.arch }}
   
     - name: Build jq lib
       if: runner.os == 'Windows' && steps.cache-prebuilt-jq.outputs.cache-hit != 'true'
       shell: msys2 {0}
-      run: |
-        make -f build_jq.mk
+      run: make -f build_jq.mk
 
     - name: Print build identifiers
       run: |
@@ -165,20 +166,20 @@ jobs:
         python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
 
     - name: Build wheels
-      if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' || matrix.cibw-only == 'cp311-win_amd64' }}
+      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' || matrix.cibw-only == 'cp311-win_amd64' }}
       uses: pypa/cibuildwheel@v2.17.0
       with:
         only: ${{ matrix.cibw-only }}
       env:
-        CIBW_ENVIRONMENT: JQPY_USE_PREBUILT_LIBS="${{steps.setup-build-win.outputs.use-prebuilt-jq }}"
+        CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && 'JQPY_USE_PREBUILT_LIBS' || '' }} ${{ contains(matrix.cibw-only, 'win32') && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
+
     - uses: actions/upload-artifact@v3
-      if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' || matrix.cibw-only == 'cp311-win_amd64' }}
+      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' || matrix.cibw-only == 'cp311-win_amd64' }}
       with:
         path: ./wheelhouse/*.whl
 
   build_wheels_macosx_arm64:
     name: Build macOS arm64 wheels
-
     runs-on: macos-14
 
     steps:
