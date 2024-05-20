@@ -65,16 +65,15 @@ class jq_with_deps_build_ext(build_ext):
             shutil.rmtree(lib_dir)
         tarfile.open(tarball_path, "r:gz").extractall(_dep_build_path("."))
 
-
 use_system_libs = bool(os.environ.get("JQPY_USE_SYSTEM_LIBS"))
-
+use_prebuilt_libs = bool(os.environ.get("JQPY_USE_PREBUILT_LIBS"))
 
 if use_system_libs:
     jq_build_ext = build_ext
     link_args_deps = ["-ljq", "-lonig"]
     extra_objects = []
 else:
-    jq_build_ext = jq_with_deps_build_ext
+    jq_build_ext = build_ext if use_prebuilt_libs else jq_with_deps_build_ext
     link_args_deps = []
     extra_objects = [
         os.path.join(jq_lib_dir, ".libs/libjq.a"),
@@ -85,8 +84,9 @@ else:
 jq_extension = Extension(
     "jq",
     sources=["jq.c"],
+    define_macros=[("MS_WIN64", 1)] if os.name == 'nt' else [],
     include_dirs=[os.path.join(jq_lib_dir, "src")],
-    extra_link_args=["-lm"] + link_args_deps,
+    extra_link_args=["-lm"] + (["-Wl,-Bstatic", "-lpthread", "-lshlwapi", "-static-libgcc"] if os.name == 'nt' else []) + link_args_deps,
     extra_objects=extra_objects,
 )
 

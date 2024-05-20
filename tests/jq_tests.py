@@ -199,6 +199,10 @@ def test_value_error_is_raised_if_program_is_invalid():
             "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting $end (Unix shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error",
             # jq 1.7
             "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting end of file (Unix shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error",
+            # jq 1.6 -win
+            "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting $end (Windows cmd shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error",
+            # jq 1.7 -win
+            "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting end of file (Windows cmd shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error",
         ]
         assert str(error) in expected_error_strs
 
