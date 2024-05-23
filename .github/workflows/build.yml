@@ -72,6 +72,7 @@ jobs:
 
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrix_win: ${{ steps.set-matrix.outputs.matrix_win }}
 
     steps:
 
@@ -94,14 +95,20 @@ jobs:
           MATRIX=$(
             {
               cibuildwheel --print-build-identifiers --platform linux \
-              | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-20.04"}/' \
+                | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-20.04"}/' \
               && cibuildwheel --print-build-identifiers --platform macos \
-                | sed 's/.*/{"cibw-only": "&", "os": "macos-13" }/' \
-              && env CIBW_SKIP="pp* cp36*" cibuildwheel --print-build-identifiers --platform windows \
-                | sed 's/.*/{"cibw-only": "&", "os": "windows-latest" }/' 
+                | sed 's/.*/{"cibw-only": "&", "os": "macos-13" }/'
             } | jq --slurp --compact-output '{"include": .}'
           )
           echo matrix="$MATRIX" >> $GITHUB_OUTPUT
+
+          MATRIX_WIN=$(
+            {
+              env CIBW_SKIP="pp* cp36*" cibuildwheel --print-build-identifiers --platform windows \
+              | sed 's/.*/{"cibw-only": "&", "os": "windows-latest" }/' 
+            } | jq --slurp --compact-output '{"include": .}'
+          )
+          echo matrix_win="$MATRIX_WIN" >> $GITHUB_OUTPUT
 
   build_wheels:
     name: Build ${{ matrix.cibw-only }} wheel
@@ -128,8 +135,42 @@ jobs:
       with:
         platforms: all
 
+    - name: Print build identifiers
+      run: |
+        python -m pip install cibuildwheel==2.17.0
+        python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
+
+    - name: Build wheels
+      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' }}
+      uses: pypa/cibuildwheel@v2.17.0
+      with:
+        only: ${{ matrix.cibw-only }}
+
+    - uses: actions/upload-artifact@v3
+      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' }}
+      with:
+        path: ./wheelhouse/*.whl
+
+  build_wheels_win:
+    name: Build ${{ matrix.cibw-only }} wheel
+
+    needs: build_wheels_matrix
+
+    strategy:
+      matrix: ${{ fromJson(needs.build_wheels_matrix.outputs.matrix_win) }}
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Use Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
     - name: set up MSYS2
-      if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
       with:
         release: false
@@ -138,7 +179,6 @@ jobs:
 
     - name: Setup windows build variables
       id: setup-build-win
-      if: runner.os == 'Windows'
       shell:  msys2 {0}
       run: |
         JQ_VERSION=$(ls deps/jq-*.tar.gz | grep -oP 'jq-\K[\d.]+(?=.tar.gz)') 
@@ -148,7 +188,6 @@ jobs:
         printf "[build]\ncompiler=mingw32" > setup.cfg
 
     - name: Cache pre-built jq lib
-      if: runner.os == 'Windows'
       id: cache-prebuilt-jq
       uses: actions/cache@v4
       with:
@@ -156,7 +195,7 @@ jobs:
         key: prebuilt-jq-${{steps.setup-build-win.outputs.jq-lib-version}}-${{ steps.setup-build-win.outputs.arch }}
   
     - name: Build jq lib
-      if: runner.os == 'Windows' && steps.cache-prebuilt-jq.outputs.cache-hit != 'true'
+      if: steps.cache-prebuilt-jq.outputs.cache-hit != 'true'
       shell: msys2 {0}
       run: make -f build_jq.mk
 
@@ -166,15 +205,15 @@ jobs:
         python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
 
     - name: Build wheels
-      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' || matrix.cibw-only == 'cp311-win_amd64' }}
+      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp311-win_amd64' }}
       uses: pypa/cibuildwheel@v2.17.0
       with:
         only: ${{ matrix.cibw-only }}
       env:
-        CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && 'JQPY_USE_PREBUILT_LIBS' || '' }} ${{ contains(matrix.cibw-only, 'win32') && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
+        CIBW_ENVIRONMENT:  JQPY_USE_PREBUILT_LIBS=1 ${{ contains(matrix.cibw-only, 'win32') && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
 
     - uses: actions/upload-artifact@v3
-      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' || matrix.cibw-only == 'cp311-win_amd64' }}
+      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp311-win_amd64' }}
       with:
         path: ./wheelhouse/*.whl
 
