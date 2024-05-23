@@ -90,7 +90,6 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: "auto aarch64"
           CIBW_ARCHS_MACOS: "auto"
-
         run: |
           MATRIX=$(
             {
@@ -141,13 +140,13 @@ jobs:
         python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
 
     - name: Build wheels
-      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' }}
+      if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' }}
       uses: pypa/cibuildwheel@v2.17.0
       with:
         only: ${{ matrix.cibw-only }}
 
     - uses: actions/upload-artifact@v3
-      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' }}
+      if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp310-manylinux_x86_64' }}
       with:
         path: ./wheelhouse/*.whl
 
@@ -205,7 +204,7 @@ jobs:
         python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
 
     - name: Build wheels
-      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp311-win_amd64' }}
+      if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp311-win_amd64' }}
       uses: pypa/cibuildwheel@v2.17.0
       with:
         only: ${{ matrix.cibw-only }}
@@ -213,7 +212,7 @@ jobs:
         CIBW_ENVIRONMENT:  JQPY_USE_PREBUILT_LIBS=1 ${{ contains(matrix.cibw-only, 'win32') && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
 
     - uses: actions/upload-artifact@v3
-      # if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp311-win_amd64' }}
+      if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) || matrix.cibw-only == 'cp311-win_amd64' }}
       with:
         path: ./wheelhouse/*.whl
 
