@@ -19,6 +19,11 @@ cdef extern from "jv.h":
       JV_KIND_ARRAY,
       JV_KIND_OBJECT
 
+    ctypedef enum:
+      JV_PARSE_SEQ,
+      JV_PARSE_STREAMING,
+      JV_PARSE_STREAM_ERRORS
+
     ctypedef struct jv:
         pass
 
@@ -49,6 +54,7 @@ cdef extern from "jv.h":
     jv_parser* jv_parser_new(int)
     void jv_parser_free(jv_parser*)
     void jv_parser_set_buf(jv_parser*, const char*, int, int)
+    int jv_parser_remaining(jv_parser*)
     jv jv_parser_next(jv_parser*)
 
     jv jv_parse(const char*)
@@ -267,7 +273,12 @@ cdef class _Program(object):
         return self.input_text(fileobj.getvalue(), slurp=slurp)
 
     def input_text(self, text, *, slurp=False):
-        return _ProgramWithInput(self._jq_state_pool, text.encode("utf8"), slurp=slurp)
+        return _ProgramWithInput(self._jq_state_pool, text.encode("utf8"),
+                                 slurp=slurp, seq=False)
+
+    def input_text_sequence(self, text, *, slurp=False):
+        return _ProgramWithInput(self._jq_state_pool, text.encode("utf8"),
+                                 slurp=slurp, seq=True)
 
     @property
     def program_string(self):
@@ -291,17 +302,20 @@ cdef class _ProgramWithInput(object):
     cdef _JqStatePool _jq_state_pool
     cdef object _bytes_input
     cdef bint _slurp
+    cdef bint _seq
 
-    def __cinit__(self, jq_state_pool, bytes_input, *, bint slurp):
+    def __cinit__(self, jq_state_pool, bytes_input, *, bint slurp, bint seq):
         self._jq_state_pool = jq_state_pool
         self._bytes_input = bytes_input
         self._slurp = slurp
+        self._seq = seq
 
     def __iter__(self):
         return self._make_iterator()
 
     cdef _ResultIterator _make_iterator(self):
-        return _ResultIterator(self._jq_state_pool, self._bytes_input, slurp=self._slurp)
+        return _ResultIterator(self._jq_state_pool, self._bytes_input,
+                               slurp=self._slurp, seq=self._seq)
 
     def text(self):
         # Performance testing suggests that using _jv_to_python (within the
@@ -309,6 +323,9 @@ cdef class _ProgramWithInput(object):
         # jv_dump_string to generate the string directly from the jv values.
         # See: https://github.com/mwilliamson/jq.py/pull/50
         return "\n".join(json.dumps(v) for v in self)
+
+    def text_sequence(self):
+        return "\x1e" + "\n\x1e".join(json.dumps(v) for v in self)
 
     def all(self):
         return list(self)
@@ -329,13 +346,14 @@ cdef class _ResultIterator(object):
         self._jq_state_pool.release(self._jq)
         jv_parser_free(self._parser)
 
-    def __cinit__(self, _JqStatePool jq_state_pool, bytes bytes_input, *, bint slurp):
+    def __cinit__(self, _JqStatePool jq_state_pool, bytes bytes_input, *,
+                  bint slurp, bint seq):
         self._jq_state_pool = jq_state_pool
         self._jq = jq_state_pool.acquire()
         self._bytes_input = bytes_input
         self._slurp = slurp
         self._ready = False
-        cdef jv_parser* parser = jv_parser_new(0)
+        cdef jv_parser* parser = jv_parser_new(JV_PARSE_SEQ if seq else 0)
         cdef char* cbytes_input
         cdef ssize_t clen_input
         PyBytes_AsStringAndSize(bytes_input, &cbytes_input, &clen_input)
@@ -384,17 +402,20 @@ cdef class _ResultIterator(object):
         return 0
 
     cdef inline jv _parse_next_input(self) except *:
-        cdef jv value = jv_parser_next(self._parser)
-        if jv_is_valid(value):
-            return value
-        elif jv_invalid_has_msg(jv_copy(value)):
-            error_message = jv_invalid_get_msg(value)
-            message = jv_string_to_py_string(error_message)
-            jv_free(error_message)
-            raise ValueError(u"parse error: " + message)
-        else:
-            jv_free(value)
-            raise StopIteration()
+        cdef jv value
+        while True:
+            value = jv_parser_next(self._parser)
+            if jv_is_valid(value):
+                return value
+            elif jv_invalid_has_msg(jv_copy(value)):
+                error_message = jv_invalid_get_msg(value)
+                message = jv_string_to_py_string(error_message)
+                jv_free(error_message)
+                raise ValueError(u"parse error: " + message)
+            else:
+                if not jv_parser_remaining(self._parser):
+                    jv_free(value)
+                    raise StopIteration()
 
 
 def all(program, value=_NO_VALUE, text=_NO_VALUE):
