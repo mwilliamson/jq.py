@@ -241,6 +241,57 @@ def test_unicode_strings_can_be_used_as_input():
     )
 
 
+def test_record_separator_character_accepted_in_input():
+    assert_equal(
+        [],
+        list(jq.compile(".").input_text_sequence('\x1e'))
+    )
+    assert_equal(
+        [],
+        list(jq.compile(".").input_text_sequence('\x1e\x1e'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input_text_sequence('\x1e{}'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input_text_sequence('\x1e\x1e{}'))
+    )
+    assert_equal(
+        [],
+        list(jq.compile(".").input_text_sequence('{}\x1e'))
+    )
+    assert_equal(
+        [],
+        list(jq.compile(".").input_text_sequence('{}\x1e\x1e'))
+    )
+    assert_equal(
+        [{}],
+        list(jq.compile(".").input_text_sequence('\x1e{}\x1e'))
+    )
+    assert_equal(
+        [[]],
+        list(jq.compile(".").input_text_sequence('{}\x1e[]'))
+    )
+    assert_equal(
+        [[]],
+        list(jq.compile(".").input_text_sequence('{}\x1e\x1e[]'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input_text_sequence('\x1e{}\x1e[]'))
+    )
+    assert_equal(
+        [[]],
+        list(jq.compile(".").input_text_sequence('{}\x1e[]\x1e'))
+    )
+    assert_equal(
+        [{},[]],
+        list(jq.compile(".").input_text_sequence('\x1e{}\x1e[]\x1e'))
+    )
+
+
 def test_unicode_strings_can_be_used_as_programs():
     assert_equal(
         "Dragon‽",
