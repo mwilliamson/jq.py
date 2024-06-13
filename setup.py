@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import os
-import sys
-import subprocess
-import tarfile
+import shlex
 import shutil
+import subprocess
+import sys
 import sysconfig
+import tarfile
 
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
@@ -29,6 +30,11 @@ jq_lib_tarball_path = _dep_source_path("jq-1.7.1.tar.gz")
 jq_lib_dir = _dep_build_path("jq-1.7.1")
 
 class jq_with_deps_build_ext(build_ext):
+    def finalize_options(self):
+        build_ext.finalize_options(self)
+        if os.name == "nt":
+            self.compiler = "mingw32"
+
     def run(self):
         if not os.path.exists(_dep_build_path(".")):
             os.makedirs(_dep_build_path("."))
@@ -56,7 +62,14 @@ class jq_with_deps_build_ext(build_ext):
 
         def run_command(args):
             print("Executing: %s" % ' '.join(args))
-            subprocess.check_call(args, cwd=lib_dir)
+
+            if os.name == "nt":
+                msys2_path = os.path.join(os.getenv("RUNNER_TEMP"), "setup-msys2", "msys2.cmd")
+                command = [msys2_path, "-c", " ".join(shlex.quote(arg) for arg in args)]
+            else:
+                command = args
+
+            subprocess.check_call(command, cwd=lib_dir)
 
         for command in commands:
             run_command(command)
@@ -66,17 +79,16 @@ class jq_with_deps_build_ext(build_ext):
             shutil.rmtree(lib_dir)
         tarfile.open(tarball_path, "r:gz").extractall(_dep_build_path("."))
 
+
 use_system_libs = bool(os.environ.get("JQPY_USE_SYSTEM_LIBS"))
-use_prebuilt_libs = bool(os.environ.get("JQPY_USE_PREBUILT_LIBS"))
-print(f"use_system_libs={use_system_libs}")
-print(f"use_prebuilt_libs={use_prebuilt_libs}")
+
 
 if use_system_libs:
     jq_build_ext = build_ext
     link_args_deps = ["-ljq", "-lonig"]
     extra_objects = []
 else:
-    jq_build_ext = build_ext if use_prebuilt_libs else jq_with_deps_build_ext
+    jq_build_ext = jq_with_deps_build_ext
     link_args_deps = []
     extra_objects = [
         os.path.join(jq_lib_dir, ".libs/libjq.a"),
@@ -86,7 +98,7 @@ else:
 jq_extension = Extension(
     "jq",
     sources=["jq.c"],
-    define_macros=[("MS_WIN64" , 1)] if os.name == 'nt' and sys.maxsize > 2**32  else None, # https://github.com/cython/cython/issues/2670
+    define_macros=[("MS_WIN64" , 1)] if os.name == "nt" and sys.maxsize > 2**32  else None, # https://github.com/cython/cython/issues/2670
     include_dirs=[os.path.join(jq_lib_dir, "src")],
     extra_link_args=["-lm"] + (["-Wl,-Bstatic", "-lpthread", "-lshlwapi", "-static-libgcc"] if os.name == 'nt' else []) + link_args_deps,
     extra_objects=extra_objects,
