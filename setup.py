@@ -99,7 +99,7 @@ setup(
     long_description=_read("README.rst"),
     author='Michael Williamson',
     url='https://github.com/mwilliamson/jq.py',
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     license='BSD 2-Clause',
     ext_modules = [jq_extension],
     cmdclass={"build_ext": jq_build_ext},
@@ -109,13 +109,13 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
 )
 
