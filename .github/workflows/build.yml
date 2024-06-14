@@ -116,36 +116,45 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v4
-
-    - name: Use Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Set up MSYS2
-      if: runner.os == 'Windows'
-      uses: ./.github/actions/setup-msys2
-      with:
-        arch: ${{ matrix.arch }}
-
-    - name: Set up QEMU
-      if: runner.os == 'Linux'
-      uses: docker/setup-qemu-action@v2
-      with:
-        platforms: all
-
-    - name: Print build identifiers
-      run: |
-        python -m pip install cibuildwheel==2.17.0
-        python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
-
-    - name: Build wheels
+    - name: Check whether to build wheel
+      id: should-build-wheel
       if: |
         (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) ||
         matrix.cibw-only == 'cp310-manylinux_x86_64' ||
         matrix.cibw-only == 'cp310-win_amd64' ||
         matrix.cibw-only == 'cp310-win32'
+      shell: bash
+      run: echo true=1 >> $GITHUB_OUTPUT
+
+    - uses: actions/checkout@v4
+      if: steps.should-build-wheel.outputs.true
+
+    - name: Use Python 3.11
+      if: steps.should-build-wheel.outputs.true
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Set up MSYS2
+      if: steps.should-build-wheel.outputs.true && runner.os == 'Windows'
+      uses: ./.github/actions/setup-msys2
+      with:
+        arch: ${{ matrix.arch }}
+
+    - name: Set up QEMU
+      if: steps.should-build-wheel.outputs.true && runner.os == 'Linux'
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: all
+
+    - name: Print build identifiers
+      if: steps.should-build-wheel.outputs.true
+      run: |
+        python -m pip install cibuildwheel==2.17.0
+        python -m cibuildwheel --only ${{ matrix.cibw-only }} --print-build-identifiers
+
+    - name: Build wheels
+      if: steps.should-build-wheel.outputs.true
       uses: pypa/cibuildwheel@v2.17.0
       with:
         only: ${{ matrix.cibw-only }}
@@ -153,11 +162,7 @@ jobs:
         CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && matrix.arch == 'x86' && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
 
     - uses: actions/upload-artifact@v3
-      if: |
-        (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) ||
-        matrix.cibw-only == 'cp310-manylinux_x86_64' ||
-        matrix.cibw-only == 'cp310-win_amd64' ||
-        matrix.cibw-only == 'cp310-win32'
+      if: steps.should-build-wheel.outputs.true
       with:
         path: ./wheelhouse/*.whl
 
