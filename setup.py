@@ -64,8 +64,7 @@ class jq_with_deps_build_ext(build_ext):
             print("Executing: %s" % ' '.join(args))
 
             if os.name == "nt":
-                msys2_path = os.path.join(os.getenv("RUNNER_TEMP"), "setup-msys2", "msys2.cmd")
-                command = [msys2_path, "-c", " ".join(shlex.quote(arg) for arg in args)]
+                command = ["msys2.cmd", "-c", " ".join(shlex.quote(arg) for arg in args)]
             else:
                 command = args
 
