@@ -62,8 +62,9 @@ jobs:
       - name: Check metadata
         run: python -m twine check dist/*
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: dist-sdist
           path: dist/*.tar.gz
 
   build_wheels_matrix:
@@ -150,9 +151,10 @@ jobs:
       env:
         CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && matrix.arch == 'x86' && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: steps.should-build-wheel.outputs.true
       with:
+        name: dist-wheel-${{ matrix.cibw-only }}
         path: ./wheelhouse/*.whl
 
   build_wheels_macosx_arm64:
@@ -187,4 +189,14 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
+        name: dist-wheels-macos-arm64
         path: ./wheelhouse/*.whl
+
+  merge_dist_artifacts:
+    runs-on: ubuntu-latest
+    needs: [build_sdist, build_wheels, build_wheels_macosx_arm64]
+    steps:
+    - uses: actions/upload-artifact/merge@v4
+      with:
+        name: dist
+        pattern: dist-*
