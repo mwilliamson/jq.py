@@ -1,16 +1,13 @@
 from collections.abc import Iterable
-from typing import Any, Literal, overload
+from typing import Any, overload
 
-from typing_extensions import Self, TypeAlias, deprecated
+from typing_extensions import Self, TypeAlias
 
 JSON: TypeAlias = Any
 
 class _EmptyValue: ...
 
 _NO_VALUE: _EmptyValue
-
-class _JqStatePool:
-    def __init__(self, program_bytes: bytes, args: Any) -> None: ...
 
 class _Program:
     def __init__(self, program_bytes: bytes, args: Any) -> None: ...
@@ -24,45 +21,14 @@ class _Program:
     @property
     def program_string(self) -> str: ...
     def __repr__(self) -> str: ...
-    @overload
-    @deprecated("'transform' is kept for 0.1.x backwards compatibility")
-    def transform(
-        self,
-        value: JSON | _EmptyValue = _NO_VALUE,
-        text: JSON | _EmptyValue = _NO_VALUE,
-        *,
-        text_output: Literal[True],
-        multiple_output: Literal[False] = False,
-    ) -> str: ...
-    @overload
-    @deprecated("'transform' is kept for 0.1.x backwards compatibility")
-    def transform(
-        self,
-        value: JSON | _EmptyValue = _NO_VALUE,
-        text: JSON | _EmptyValue = _NO_VALUE,
-        *,
-        text_output: Literal[False] = False,
-        multiple_output: Literal[True],
-    ) -> list[JSON]: ...
-    @overload
-    @deprecated("'transform' is kept for 0.1.x backwards compatibility")
-    def transform(
-        self,
-        value: JSON | _EmptyValue = _NO_VALUE,
-        text: JSON | _EmptyValue = _NO_VALUE,
-        text_output: Literal[False] = False,
-        multiple_output: Literal[False] = False,
-    ) -> JSON: ...
 
 class _ProgramWithInput:
-    def __init__(self, jq_state_pool: _JqStatePool, bytes_input: bytes, *, slurp: bool) -> None: ...
     def __iter__(self) -> _ResultIterator: ...
     def text(self) -> str: ...
     def all(self) -> list[JSON]: ...
     def first(self) -> JSON: ...
 
 class _ResultIterator:
-    def __init__(self, jq_state_pool: _JqStatePool, bytes_input: bytes, *, slurp: bool) -> None: ...
     def __iter__(self) -> Self: ...
     def __next__(self) -> JSON: ...
 
@@ -83,5 +49,3 @@ def iter(program: str, value: _EmptyValue = _NO_VALUE, *, text: str) -> _ResultI
 def text(program: str, value: JSON, text: _EmptyValue = _NO_VALUE) -> str: ...
 @overload
 def text(program: str, value: _EmptyValue = _NO_VALUE, *, text: str) -> str: ...
-@deprecated("'jq' is kept for 0.1.x backwards compatibility")
-def jq(program: str) -> _Program: ...
