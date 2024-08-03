@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 before-build = [
-    "pip install cython==0.29.35",
+    "pip install cython==3.0.10",
     "cython {project}/jq.pyx",
 ]
 test-requires = "-r test-requirements.txt"
