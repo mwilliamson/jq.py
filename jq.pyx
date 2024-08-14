@@ -177,7 +177,12 @@ cdef void _store_error(void* store_ptr, jv error) noexcept:
     # TODO: handle errors not of JV_KIND_STRING
     cdef _ErrorStore store = <_ErrorStore>store_ptr
     if jv_get_kind(error) == JV_KIND_STRING:
-        store.store_error(jv_string_to_py_string(error))
+        try:
+            error_string = jv_string_to_py_string(error)
+        except:
+            error_string = "Internal error"
+
+        store.store_error(error_string)
 
     jv_free(error)
 
