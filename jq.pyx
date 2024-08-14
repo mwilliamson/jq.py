@@ -124,7 +124,7 @@ cdef object _jv_to_python(jv value):
     return python_value
 
 
-cdef int _is_integer(double value):
+cdef int _is_integer(double value) noexcept:
     cdef double integral_part
     cdef double fractional_part = modf(value, &integral_part)
 
