@@ -6,6 +6,8 @@ Changelog
 
 * Drop support for Python 3.5.
 
+* Add support for Python 3.13.
+
 * Build Windows wheels.
 
 1.7.0
