@@ -3,6 +3,7 @@
 import os
 import shlex
 import shutil
+import struct
 import subprocess
 import sys
 import sysconfig
@@ -105,10 +106,13 @@ else:
     ext = ".pyx"
 
 
+_64_BIT_INTERPRETER = struct.calcsize("P") != 4 # From https://github.com/pypa/packaging/pull/711
+
+
 jq_extension = Extension(
     "jq",
     sources=[_path_in_dir(f"jq{ext}")],
-    define_macros=[("MS_WIN64" , 1)] if os.name == "nt" and sys.maxsize > 2**32  else None, # https://github.com/cython/cython/issues/2670
+    define_macros=[("MS_WIN64" , "1")] if os.name == "nt" and _64_BIT_INTERPRETER else None, # https://github.com/cython/cython/issues/2670
     include_dirs=[os.path.join(jq_lib_dir, "src")],
     extra_link_args=["-lm"] + (["-Wl,-Bstatic", "-lpthread", "-lshlwapi", "-static-libgcc"] if os.name == 'nt' else []) + link_args_deps,
     extra_objects=extra_objects,
