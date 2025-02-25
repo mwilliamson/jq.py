@@ -2,13 +2,10 @@
 requires = [
     "setuptools>=43",
     "wheel",
+    "Cython==3.0.10",
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
-before-build = [
-    "pip install cython==3.0.10",
-    "cython {project}/jq.pyx",
-]
 test-requires = "-r test-requirements.txt"
 test-command = "pytest {project}/tests"

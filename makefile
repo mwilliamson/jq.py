@@ -15,7 +15,6 @@ clean:
 	rm -rf dist
 
 bootstrap: _virtualenv jq.c
-	_virtualenv/bin/pip install -e .
 ifneq ($(wildcard test-requirements.txt),)
 	_virtualenv/bin/pip install -r test-requirements.txt
 endif
@@ -28,5 +27,4 @@ _virtualenv:
 	_virtualenv/bin/pip install --upgrade wheel
 
 jq.c: _virtualenv jq.pyx
-	_virtualenv/bin/pip install cython==3.0.10
-	_virtualenv/bin/cython jq.pyx
+	_virtualenv/bin/pip install -e .
