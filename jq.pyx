@@ -183,13 +183,15 @@ cdef void _store_error(void* store_ptr, jv error) noexcept:
 
 
 cdef unicode _jq_error_to_py_string(jv error) noexcept:
+    error = jv_copy(error)
+
     if jv_get_kind(error) == JV_KIND_STRING:
         try:
             return jv_string_to_py_string(error)
         except:
             return u"Internal error"
     else:
-        return u"(not a string)"
+        return json.dumps(_jv_to_python(error))
 
 
 cdef class _ErrorStore(object):
