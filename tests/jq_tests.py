@@ -217,6 +217,16 @@ def test_value_error_is_raised_if_input_cannot_be_processed_by_program():
         assert_equal(str(error), expected_error_str)
 
 
+def test_non_string_error_is_converted_to_generic_string():
+    program = jq.compile("error")
+    try:
+        program.input(1).all()
+        assert False, "Expected error"
+    except ValueError as error:
+        expected_error_str = "(not a string)"
+        assert_equal(str(error), expected_error_str)
+
+
 def test_errors_do_not_leak_between_transformations():
     program = jq.compile(".x")
     try:

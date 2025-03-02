@@ -174,17 +174,22 @@ cdef jq_state* _compile(object program_bytes, object args) except NULL:
 
 
 cdef void _store_error(void* store_ptr, jv error) noexcept:
-    # TODO: handle errors not of JV_KIND_STRING
     cdef _ErrorStore store = <_ErrorStore>store_ptr
-    if jv_get_kind(error) == JV_KIND_STRING:
-        try:
-            error_string = jv_string_to_py_string(error)
-        except:
-            error_string = "Internal error"
 
-        store.store_error(error_string)
+    error_string = _jq_error_to_py_string(error)
+    store.store_error(error_string)
 
     jv_free(error)
+
+
+cdef unicode _jq_error_to_py_string(jv error) noexcept:
+    if jv_get_kind(error) == JV_KIND_STRING:
+        try:
+            return jv_string_to_py_string(error)
+        except:
+            return u"Internal error"
+    else:
+        return u"(not a string)"
 
 
 cdef class _ErrorStore(object):
@@ -361,7 +366,7 @@ cdef class _ResultIterator(object):
                 return _jv_to_python(result)
             elif jv_invalid_has_msg(jv_copy(result)):
                 error_message = jv_invalid_get_msg(result)
-                message = jv_string_to_py_string(error_message)
+                message = _jq_error_to_py_string(error_message)
                 jv_free(error_message)
                 raise ValueError(message)
             else:
@@ -394,7 +399,7 @@ cdef class _ResultIterator(object):
             return value
         elif jv_invalid_has_msg(jv_copy(value)):
             error_message = jv_invalid_get_msg(value)
-            message = jv_string_to_py_string(error_message)
+            message = _jq_error_to_py_string(error_message)
             jv_free(error_message)
             raise ValueError(u"parse error: " + message)
         else:
