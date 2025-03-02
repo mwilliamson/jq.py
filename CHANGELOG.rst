@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.9.0
+-----
+
+* Drop support for Python 3.6
+
 1.8.0
 -----
 
