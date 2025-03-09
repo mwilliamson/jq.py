@@ -15,6 +15,9 @@ jobs:
           - os: ubuntu-22.04
             python-version: "3.11"
             use-system-libs: true
+          - os: ubuntu-22.04
+            python-version: graalpy-24.1.2
+            use-system-libs: false
 
     steps:
 
@@ -26,6 +29,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - run: pip install tox virtualenv
+
+    - run: pip install /opt/hostedtoolcache/GraalPy/24.1.2/x64/graalpy_virtualenv
+      if: ${{ startsWith(matrix.python-version, 'graalpy-24.1.2') }}
 
     - run: tox -e py
       if: ${{ !matrix.use-system-libs }}
