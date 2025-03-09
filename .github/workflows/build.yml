@@ -27,8 +27,6 @@ jobs:
 
     - run: pip install tox virtualenv
 
-    - run: "make jq.c"
-
     - run: tox -e py
       if: ${{ !matrix.use-system-libs }}
 
@@ -51,8 +49,6 @@ jobs:
         name: Use Python 3.11
         with:
           python-version: '3.11'
-
-      - run: make jq.c
 
       - run: pip install build twine
 

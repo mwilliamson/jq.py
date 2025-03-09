@@ -6,6 +6,8 @@ Changelog
 
 * Drop support for Python 3.6
 
+* Distribute Cython sources instead of C sources to improve compatibility.
+
 1.8.0
 -----
 

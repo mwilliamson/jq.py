@@ -8,6 +8,7 @@ import sys
 import sysconfig
 import tarfile
 
+from Cython.Build import cythonize
 from setuptools import setup
 from setuptools.command.build_ext import build_ext
 from setuptools.extension import Extension
@@ -96,7 +97,7 @@ else:
 
 jq_extension = Extension(
     "jq",
-    sources=["jq.c"],
+    sources=["jq.pyx"],
     define_macros=[("MS_WIN64" , 1)] if os.name == "nt" and sys.maxsize > 2**32  else None, # https://github.com/cython/cython/issues/2670
     include_dirs=[os.path.join(jq_lib_dir, "src")],
     extra_link_args=["-lm"] + (["-Wl,-Bstatic", "-lpthread", "-lshlwapi", "-static-libgcc"] if os.name == 'nt' else []) + link_args_deps,
@@ -112,7 +113,7 @@ setup(
     url='https://github.com/mwilliamson/jq.py',
     python_requires='>=3.7',
     license='BSD 2-Clause',
-    ext_modules = [jq_extension],
+    ext_modules = cythonize([jq_extension]),
     cmdclass={"build_ext": jq_build_ext},
     classifiers=[
         'Development Status :: 5 - Production/Stable',

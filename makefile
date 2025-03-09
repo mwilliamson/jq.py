@@ -3,7 +3,7 @@
 test: bootstrap
 	_virtualenv/bin/py.test tests
 
-upload: jq.c
+upload:
 	python setup.py sdist upload
 	make clean
 
@@ -14,7 +14,7 @@ clean:
 	rm -f MANIFEST
 	rm -rf dist
 
-bootstrap: _virtualenv jq.c
+bootstrap: _virtualenv
 	_virtualenv/bin/pip install -e .
 ifneq ($(wildcard test-requirements.txt),)
 	_virtualenv/bin/pip install -r test-requirements.txt
@@ -26,7 +26,3 @@ _virtualenv:
 	_virtualenv/bin/pip install --upgrade pip
 	_virtualenv/bin/pip install --upgrade setuptools
 	_virtualenv/bin/pip install --upgrade wheel
-
-jq.c: _virtualenv jq.pyx
-	_virtualenv/bin/pip install cython==3.0.10
-	_virtualenv/bin/cython jq.pyx
