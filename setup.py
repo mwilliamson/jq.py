@@ -98,7 +98,9 @@ else:
 jq_extension = Extension(
     "jq",
     sources=["jq.pyx"],
-    define_macros=[("MS_WIN64" , 1)] if os.name == "nt" and sys.maxsize > 2**32  else None, # https://github.com/cython/cython/issues/2670
+    # MS_WIN64 has to be set to successfully build when using MinGW for 64-bit
+    # Windows. See: https://github.com/cython/cython/issues/2670
+    define_macros=[("MS_WIN64" , 1)] if os.name == "nt" and sys.maxsize > 2**32  else None,
     include_dirs=[os.path.join(jq_lib_dir, "src")],
     extra_link_args=["-lm"] + (["-Wl,-Bstatic", "-lpthread", "-lshlwapi", "-static-libgcc"] if os.name == 'nt' else []) + link_args_deps,
     extra_objects=extra_objects,
