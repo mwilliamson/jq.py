@@ -272,14 +272,30 @@ cdef class _Program(object):
         return self.input_text(json.dumps(value))
 
     def input_values(self, values):
-        fileobj = io.StringIO()
-        for value in values:
-            json.dump(value, fileobj)
-            fileobj.write("\n")
-        return self.input_text(fileobj.getvalue())
+        def helper():
+            for v in values:
+                yield json.dumps(v).encode("utf8")
+                yield b"\n"
+
+        it = helper()
+        read = lambda _n: next(it, b"")
+        return _ProgramWithInput(self._jq_state_pool, read, slurp=False)
+
+    def input_file(self, file):
+        def read(n):
+            # Note that this function ONLY supports text-mode file objects,
+            # since we MUST NOT pass data with split utf8 codepoints to jq.
+            return file.read(n).encode("utf8")
+
+        return _ProgramWithInput(self._jq_state_pool, read, slurp=False)
 
     def input_text(self, text, *, slurp=False):
-        return _ProgramWithInput(self._jq_state_pool, text.encode("utf8"), slurp=slurp)
+        def helper():
+            yield text.encode("utf8")
+
+        it = helper()
+        read = lambda _n: next(it, b"")
+        return _ProgramWithInput(self._jq_state_pool, read, slurp=slurp)
 
     @property
     def program_string(self):
@@ -301,19 +317,21 @@ cdef class _Program(object):
 
 cdef class _ProgramWithInput(object):
     cdef _JqStatePool _jq_state_pool
-    cdef object _bytes_input
+    cdef object _read_next_bytes
     cdef bint _slurp
 
-    def __cinit__(self, jq_state_pool, bytes_input, *, bint slurp):
+    def __cinit__(self, jq_state_pool, read_next_bytes, *, bint slurp):
+        # read_next_bytes(n) SHOULD return n utf8 codepoints,
+        # and it MUST NOT return data with split utf8 codepoints.
         self._jq_state_pool = jq_state_pool
-        self._bytes_input = bytes_input
+        self._read_next_bytes = read_next_bytes
         self._slurp = slurp
 
     def __iter__(self):
         return self._make_iterator()
 
     cdef _ResultIterator _make_iterator(self):
-        return _ResultIterator(self._jq_state_pool, self._bytes_input, slurp=self._slurp)
+        return _ResultIterator(self._jq_state_pool, self._read_next_bytes, slurp=self._slurp)
 
     def text(self):
         # Performance testing suggests that using _jv_to_python (within the
@@ -333,6 +351,7 @@ cdef class _ResultIterator(object):
     cdef _JqStatePool _jq_state_pool
     cdef jq_state* _jq
     cdef jv_parser* _parser
+    cdef object _read_next_bytes
     cdef bytes _bytes_input
     cdef bint _slurp
     cdef bint _ready
@@ -341,18 +360,14 @@ cdef class _ResultIterator(object):
         self._jq_state_pool.release(self._jq)
         jv_parser_free(self._parser)
 
-    def __cinit__(self, _JqStatePool jq_state_pool, bytes bytes_input, *, bint slurp):
+    def __cinit__(self, _JqStatePool jq_state_pool, object read_next_bytes, *, bint slurp):
         self._jq_state_pool = jq_state_pool
         self._jq = jq_state_pool.acquire()
-        self._bytes_input = bytes_input
         self._slurp = slurp
         self._ready = False
-        cdef jv_parser* parser = jv_parser_new(0)
-        cdef char* cbytes_input
-        cdef ssize_t clen_input
-        PyBytes_AsStringAndSize(bytes_input, &cbytes_input, &clen_input)
-        jv_parser_set_buf(parser, cbytes_input, clen_input, 0)
-        self._parser = parser
+        self._parser = jv_parser_new(0)
+        self._read_next_bytes = read_next_bytes
+        self._read_next_input()
 
     def __iter__(self):
         return self
@@ -395,18 +410,31 @@ cdef class _ResultIterator(object):
         jq_start(self._jq, value, jq_flags)
         return 0
 
+    cdef ssize_t _read_next_input(self) except *:
+        self._bytes_input = self._read_next_bytes(4096)
+        # Note, this requires that the output of _read_next_bytes is NOT
+        # split across utf8 codepoints.
+        cdef char* cbytes_input = NULL
+        cdef ssize_t clen_input = 0
+        PyBytes_AsStringAndSize(self._bytes_input, &cbytes_input, &clen_input)
+        jv_parser_set_buf(self._parser, cbytes_input, clen_input, clen_input > 0)
+        return clen_input
+
     cdef inline jv _parse_next_input(self) except *:
-        cdef jv value = jv_parser_next(self._parser)
-        if jv_is_valid(value):
-            return value
-        elif jv_invalid_has_msg(jv_copy(value)):
-            error_message = jv_invalid_get_msg(value)
-            message = _jq_error_to_py_string(error_message)
-            jv_free(error_message)
-            raise ValueError(u"parse error: " + message)
-        else:
-            jv_free(value)
-            raise StopIteration()
+        cdef jv value
+        while True:
+            value = jv_parser_next(self._parser)
+            if jv_is_valid(value):
+                return value
+            elif jv_invalid_has_msg(jv_copy(value)):
+                error_message = jv_invalid_get_msg(value)
+                message = _jq_error_to_py_string(error_message)
+                jv_free(error_message)
+                raise ValueError(u"parse error: " + message)
+            else:
+                jv_free(value)
+                if self._read_next_input() <= 0:
+                    raise StopIteration()
 
 
 def all(program, value=_NO_VALUE, text=_NO_VALUE):
