@@ -1,13 +1,10 @@
 Changelog
 =========
 
-1.10.0
-------
-
-* Update to jq 1.8.0.
-
 1.9.0
 -----
+
+* Update to jq 1.8.0.
 
 * Drop support for Python 3.6
 
