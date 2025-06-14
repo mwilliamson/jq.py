@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.9.1
+-----
+
+* Apply a patch to jq to fix musl builds.
+
 1.9.0
 -----
 

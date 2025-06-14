@@ -47,6 +47,7 @@ class jq_with_deps_build_ext(build_ext):
             tarball_path=jq_lib_tarball_path,
             lib_dir=jq_lib_dir,
             commands=[
+                ["patch", "-i", _dep_source_path("jq-1.8.0-Makefile.patch")],
                 ["./configure", "CFLAGS=-fPIC -pthread", "--disable-maintainer-mode", "--with-oniguruma=builtin"],
                 ["make"],
             ])

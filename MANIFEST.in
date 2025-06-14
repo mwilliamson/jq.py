@@ -1,6 +1,7 @@
 include README.rst
 include LICENSE
 include deps/*.tar.gz
+include deps/jq-1.8.0-Makefile.patch
 recursive-include tests *.py
 include tox.ini
 include jq.pyx

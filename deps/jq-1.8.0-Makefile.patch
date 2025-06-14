@@ -1,0 +1,24 @@
+diff -rBu a/Makefile.am b/Makefile.am
+--- a/Makefile.am	2025-06-01 06:58:31.000000000 +0100
++++ b/Makefile.am	2025-06-14 15:01:47.294842066 +0100
+@@ -99,7 +99,7 @@
+ # Remake the version.h header file if, and only if, the git ID has changed
+ .PHONY: .FORCE
+ .FORCE:
+-generate_ver = ver="`{ $(srcdir)/scripts/version || echo '$(VERSION)' ; } | sed 's/.*/\x23define JQ_VERSION \"&\"/'`"
++generate_ver = ver="`{ $(srcdir)/scripts/version || echo '$(VERSION)' ; } | xargs printf '\043define JQ_VERSION \"%s\"\n'`"
+ .remake-version-h: .FORCE
+ 	@ $(generate_ver); test "x`cat src/version.h 2>/dev/null`" = "x$$ver" || touch .remake-version-h
+ src/version.h: .remake-version-h
+diff -rBu a/Makefile.in b/Makefile.in
+--- a/Makefile.in	2025-06-01 06:58:46.000000000 +0100
++++ b/Makefile.in	2025-06-14 15:05:52.913771036 +0100
+@@ -754,7 +754,7 @@
+ @ENABLE_ERROR_INJECTION_TRUE@libinject_errors_la_SOURCES = src/inject_errors.c
+ @ENABLE_ERROR_INJECTION_TRUE@libinject_errors_la_LIBADD = -ldl
+ @ENABLE_ERROR_INJECTION_TRUE@libinject_errors_la_LDFLAGS = -module
+-generate_ver = ver="`{ $(srcdir)/scripts/version || echo '$(VERSION)' ; } | sed 's/.*/\x23define JQ_VERSION \"&\"/'`"
++generate_ver = ver="`{ $(srcdir)/scripts/version || echo '$(VERSION)' ; } | xargs printf '\043define JQ_VERSION \"%s\"\n'`"
+ CLEANFILES = src/version.h .remake-version-h src/builtin.inc \
+ 	src/config_opts.inc jq.1
+ jq_SOURCES = src/main.c
