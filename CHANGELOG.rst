@@ -4,6 +4,8 @@ Changelog
 1.9.0
 -----
 
+* Update to jq 1.8.0.
+
 * Drop support for Python 3.6
 
 * Distribute Cython sources instead of C sources to improve compatibility.

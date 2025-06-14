@@ -75,14 +75,16 @@ def test_value_error_is_raised_if_program_is_invalid():
         assert False, "Expected error"
     except ValueError as error:
         expected_error_strs = [
-            # jq 1.6
+            # jq 1.6 on Unix
             "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting $end (Unix shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error",
-            # jq 1.7
-            "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting end of file (Unix shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error",
-            # jq 1.6 -win
+            # jq 1.6 on Windows
             "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting $end (Windows cmd shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error",
-            # jq 1.7 -win
+            # jq 1.7 on Unix
+            "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting end of file (Unix shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error",
+            # jq 1.7 on Windows
             "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting end of file (Windows cmd shell quoting issues?) at <top-level>, line 1:\n!\njq: 1 compile error",
+            # jq 1.8
+            "jq: error: syntax error, unexpected INVALID_CHARACTER, expecting end of file at <top-level>, line 1, column 1:\n    !\n    ^\njq: 1 compile error",
         ]
         assert str(error) in expected_error_strs
 
