@@ -6,13 +6,13 @@ runs:
   using: "composite"
   steps:
   - name: Set up MSYS2
+    id: set-up-msys2
     uses: msys2/setup-msys2@v2
     with:
-      release: false
       msystem: ${{ inputs.arch == 'x86' && 'mingw32' || 'ucrt64' }}
       install: make mingw-w64-${{ inputs.arch == 'x86' && 'i686' || 'ucrt-x86_64' }}-gcc
 
   - name: Set PATH for x86
     if: ${{ inputs.arch == 'x86' }}
     shell: msys2 {0}
-    run: echo "C:/msys64/mingw32/bin" >> "$GITHUB_PATH"
+    run: echo "${{ steps.set-up-msys2.outputs.msys2-location }}/mingw32/bin" >> "$GITHUB_PATH"
