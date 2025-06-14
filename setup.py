@@ -27,8 +27,8 @@ def _read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-jq_lib_tarball_path = _dep_source_path("jq-1.7.1.tar.gz")
-jq_lib_dir = _dep_build_path("jq-1.7.1")
+jq_lib_tarball_path = _dep_source_path("jq-1.8.0.tar.gz")
+jq_lib_dir = _dep_build_path("jq-1.8.0")
 
 class jq_with_deps_build_ext(build_ext):
     def finalize_options(self):
@@ -92,7 +92,7 @@ else:
     link_args_deps = []
     extra_objects = [
         os.path.join(jq_lib_dir, ".libs/libjq.a"),
-        os.path.join(jq_lib_dir, "modules/oniguruma/src/.libs/libonig.a"),
+        os.path.join(jq_lib_dir, "vendor/oniguruma/src/.libs/libonig.a"),
     ]
 
 jq_extension = Extension(
