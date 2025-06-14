@@ -4,6 +4,8 @@ Changelog
 1.9.0
 -----
 
+Note: this version was never released due a bug in jq breaking builds with musl.
+
 * Update to jq 1.8.0.
 
 * Drop support for Python 3.6
