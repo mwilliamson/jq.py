@@ -86,7 +86,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: "auto aarch64"
           CIBW_ARCHS_MACOS: "auto"
-          CIBW_SKIP: "cp36-win_amd64 cp36-win32 pp*-win_amd64 pp*-win32"
+          CIBW_SKIP: "cp36-win_amd64 cp36-win32 pp*-win_amd64 pp*-win32 pp38-*"
         run: |
           MATRIX=$(
             {
