@@ -6,7 +6,7 @@ Changelog
 
 * Apply a patch to jq to fix musl builds.
 
-* Drop support for Python 3.7.
+* Drop support for Python 3.7 and PyPy 3.8.
 
 1.9.0
 -----
