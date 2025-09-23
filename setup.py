@@ -130,6 +130,7 @@ setup(
         'Programming Language :: Python :: 3.12',
         'Programming Language :: Python :: 3.13',
         'Programming Language :: Python :: Implementation :: PyPy',
+        'Programming Language :: Python :: Implementation :: GraalPy',
         'Programming Language :: Python :: Implementation :: CPython',
     ],
 )
