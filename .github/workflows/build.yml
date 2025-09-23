@@ -15,6 +15,9 @@ jobs:
           - os: ubuntu-22.04
             python-version: "3.11"
             use-system-libs: true
+          - os: ubuntu-22.04
+            python-version: "graalpy-25.0"
+            use-system-libs: false
 
     steps:
 
@@ -80,13 +83,14 @@ jobs:
           python-version: '3.11'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.23.3
+        run: python -m pip install cibuildwheel==3.2.0
 
       - id: set-matrix
         env:
           CIBW_ARCHS_LINUX: "auto aarch64"
           CIBW_ARCHS_MACOS: "auto"
-          CIBW_SKIP: "cp36-win_amd64 cp36-win32 pp*-win_amd64 pp*-win32 pp38-*"
+          CIBW_ENABLE: "pypy graalpy"
+          CIBW_SKIP: "cp36-win_amd64 cp36-win32 pp*-win_amd64 pp*-win32 pp38-* gp311* gp*-win_amd64"
         run: |
           MATRIX=$(
             {
@@ -143,11 +147,12 @@ jobs:
 
     - name: Build wheels
       if: steps.should-build-wheel.outputs.true
-      uses: pypa/cibuildwheel@v2.23.3
+      uses: pypa/cibuildwheel@v3.2.0
       with:
         only: ${{ matrix.cibw-only }}
       env:
         CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && matrix.arch == 'x86' && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
+        CIBW_ENABLE: "pypy graalpy"
 
     - uses: actions/upload-artifact@v4
       if: steps.should-build-wheel.outputs.true
@@ -170,18 +175,19 @@ jobs:
 
     - name: Print build identifiers
       run: |
-        python -m pip install cibuildwheel==2.23.3
+        python -m pip install cibuildwheel==3.2.0
         CIBW_SKIP=cp38-macosx_arm64 python -m cibuildwheel --print-build-identifiers
 
     - name: Build wheels
       if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
-      uses: pypa/cibuildwheel@v2.23.3
+      uses: pypa/cibuildwheel@v3.2.0
       env:
         CIBW_SKIP: cp38-macosx_arm64
+        CIBW_ENABLE: "pypy graalpy"
 
     - name: Build wheels
       if: ${{ !(github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
-      uses: pypa/cibuildwheel@v2.23.3
+      uses: pypa/cibuildwheel@v3.2.0
       with:
         only: cp310-macosx_arm64
 
