@@ -86,8 +86,8 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: "auto aarch64"
           CIBW_ARCHS_MACOS: "auto"
-          CIBW_SKIP: "pp*-win_amd64 pp*-win32"
           CIBW_ENABLE: "pypy"
+          CIBW_SKIP: "pp*-win_amd64 pp*-win32"
         run: |
           MATRIX=$(
             {
@@ -180,6 +180,7 @@ jobs:
       if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
       uses: pypa/cibuildwheel@v3.3.0
       env:
+        CIBW_ENABLE: "pypy"
         CIBW_SKIP: cp38-macosx_arm64
 
     - name: Build wheels
