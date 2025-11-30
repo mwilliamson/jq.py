@@ -119,6 +119,7 @@ jobs:
       if: |
         (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) ||
         matrix.cibw-only == 'cp310-manylinux_x86_64' ||
+        matrix.cibw-only == 'pp310-manylinux_x86_64' ||
         matrix.cibw-only == 'cp310-musllinux_x86_64' ||
         matrix.cibw-only == 'cp310-macosx_x86_64' ||
         matrix.cibw-only == 'cp310-win_amd64' ||
