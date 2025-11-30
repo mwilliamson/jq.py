@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.11.0
+------
+
+* Add support for Python 3.14.
+
 1.10.0
 ------
 
