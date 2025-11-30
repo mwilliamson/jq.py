@@ -80,13 +80,14 @@ jobs:
           python-version: '3.11'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.23.3
+        run: python -m pip install cibuildwheel==3.3.0
 
       - id: set-matrix
         env:
           CIBW_ARCHS_LINUX: "auto aarch64"
           CIBW_ARCHS_MACOS: "auto"
           CIBW_SKIP: "cp36-win_amd64 cp36-win32 pp*-win_amd64 pp*-win32 pp38-*"
+          CIBW_ENABLE: "pypy"
         run: |
           MATRIX=$(
             {
@@ -119,7 +120,7 @@ jobs:
       if: |
         (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) ||
         matrix.cibw-only == 'cp310-manylinux_x86_64' ||
-        matrix.cibw-only == 'pp310-manylinux_x86_64' ||
+        matrix.cibw-only == 'pp311-manylinux_x86_64' ||
         matrix.cibw-only == 'cp310-musllinux_x86_64' ||
         matrix.cibw-only == 'cp310-macosx_x86_64' ||
         matrix.cibw-only == 'cp310-win_amd64' ||
@@ -144,7 +145,7 @@ jobs:
 
     - name: Build wheels
       if: steps.should-build-wheel.outputs.true
-      uses: pypa/cibuildwheel@v2.23.3
+      uses: pypa/cibuildwheel@v3.3.0
       with:
         only: ${{ matrix.cibw-only }}
       env:
@@ -171,18 +172,18 @@ jobs:
 
     - name: Print build identifiers
       run: |
-        python -m pip install cibuildwheel==2.23.3
+        python -m pip install cibuildwheel==3.3.0
         CIBW_SKIP=cp38-macosx_arm64 python -m cibuildwheel --print-build-identifiers
 
     - name: Build wheels
       if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
-      uses: pypa/cibuildwheel@v2.23.3
+      uses: pypa/cibuildwheel@v3.3.0
       env:
         CIBW_SKIP: cp38-macosx_arm64
 
     - name: Build wheels
       if: ${{ !(github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
-      uses: pypa/cibuildwheel@v2.23.3
+      uses: pypa/cibuildwheel@v3.3.0
       with:
         only: cp310-macosx_arm64
 
