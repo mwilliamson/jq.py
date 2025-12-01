@@ -99,6 +99,16 @@ Call ``.input_values()`` to supply multiple valid JSON values, such as the value
 
     assert jq.compile(".+5").input_values([1, 2, 3]).all() == [6, 7, 8]
 
+Call ``.input_file()`` to supply a file object in text mode:
+
+.. code-block:: python
+
+    import io
+    import jq
+
+    assert jq.compile(".").input_file(io.StringIO("42")).first() == 42
+    assert jq.compile(".").input_file(io.StringIO("1\n2\n3")).all() == [1, 2, 3]
+
 Call ``.input_text()`` to supply unparsed JSON text:
 
 .. code-block:: python
