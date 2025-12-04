@@ -62,8 +62,9 @@ cdef extern from "jq.h":
 
     jq_state *jq_init()
     void jq_teardown(jq_state **)
-    int jq_compile(jq_state *, const char* str)
-    int jq_compile_args(jq_state *, const char* str, jv)
+    # Mark compile functions as nogil-safe to allow releasing GIL during compilation
+    int jq_compile(jq_state *, const char* str) nogil
+    int jq_compile_args(jq_state *, const char* str, jv) nogil
     void jq_start(jq_state *, jv value, int flags)
     jv jq_next(jq_state *)
     void jq_set_error_cb(jq_state *, jq_err_cb, void *)
@@ -144,6 +145,9 @@ cdef jq_state* _compile(object program_bytes, object args) except NULL:
     cdef _ErrorStore error_store
     cdef jv jv_args
     cdef int compiled
+    cdef const char* c_program  # C pointer for nogil block
+    cdef bytes args_bytes_holder  # Keep reference alive during nogil
+
     try:
         if not jq:
             raise Exception("jq_init failed")
@@ -153,12 +157,19 @@ cdef jq_state* _compile(object program_bytes, object args) except NULL:
         with _compilation_lock:
             jq_set_error_cb(jq, _store_error, <void*>error_store)
 
+            # Extract C string before releasing GIL
+            c_program = PyBytes_AsString(program_bytes)
+
             if args is None:
-                compiled = jq_compile(jq, program_bytes)
+                # Release GIL during compilation - error callback reacquires via 'with gil'
+                with nogil:
+                    compiled = jq_compile(jq, c_program)
             else:
-                args_bytes = json.dumps(args).encode("utf-8")
-                jv_args = jv_parse(PyBytes_AsString(args_bytes))
-                compiled = jq_compile_args(jq, program_bytes, jv_args)
+                args_bytes_holder = json.dumps(args).encode("utf-8")
+                jv_args = jv_parse(PyBytes_AsString(args_bytes_holder))
+                # Release GIL during compilation - error callback reacquires via 'with gil'
+                with nogil:
+                    compiled = jq_compile_args(jq, c_program, jv_args)
 
             if error_store.has_errors():
                 raise ValueError(error_store.error_string())
@@ -173,7 +184,7 @@ cdef jq_state* _compile(object program_bytes, object args) except NULL:
     return jq
 
 
-cdef void _store_error(void* store_ptr, jv error) noexcept:
+cdef void _store_error(void* store_ptr, jv error) noexcept with gil:
     cdef _ErrorStore store = <_ErrorStore>store_ptr
 
     error_string = _jq_error_to_py_string(error)
