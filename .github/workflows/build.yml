@@ -124,7 +124,9 @@ jobs:
         matrix.cibw-only == 'pp311-manylinux_x86_64' ||
         matrix.cibw-only == 'cp310-musllinux_x86_64' ||
         matrix.cibw-only == 'cp310-macosx_x86_64' ||
+        matrix.cibw-only == 'cp314t-macosx_x86_64' ||
         matrix.cibw-only == 'cp310-win_amd64' ||
+        matrix.cibw-only == 'cp314t-win_amd64' ||
         matrix.cibw-only == 'cp310-win32'
       shell: bash
       run: echo true=1 >> $GITHUB_OUTPUT
