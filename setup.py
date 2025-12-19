@@ -95,12 +95,22 @@ else:
         os.path.join(jq_lib_dir, "vendor/oniguruma/src/.libs/libonig.a"),
     ]
 
+
+define_macros = []
+
+# MS_WIN64 has to be set to successfully build when using MinGW for 64-bit
+# Windows. See: https://github.com/cython/cython/issues/2670
+if os.name == "nt" and sys.maxsize > 2**32:
+    define_macros.append(("MS_WIN64" , 1))
+
+if os.name == "nt" and sysconfig.get_config_var("Py_GIL_DISABLED") == 1:
+    define_macros.append(("Py_GIL_DISABLED", "1"))
+
+
 jq_extension = Extension(
     "jq",
     sources=["jq.pyx"],
-    # MS_WIN64 has to be set to successfully build when using MinGW for 64-bit
-    # Windows. See: https://github.com/cython/cython/issues/2670
-    define_macros=[("MS_WIN64" , 1)] if os.name == "nt" and sys.maxsize > 2**32  else None,
+    define_macros=define_macros,
     include_dirs=[os.path.join(jq_lib_dir, "src")],
     extra_link_args=["-lm"] + (["-Wl,-Bstatic", "-lpthread", "-lshlwapi", "-static-libgcc"] if os.name == 'nt' else []) + link_args_deps,
     extra_objects=extra_objects,
