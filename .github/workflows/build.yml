@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-14]
+        os: [ubuntu-22.04, macos-15-intel]
         python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13", "3.14", "3.14t", "pypy-3.11"]
         use-system-libs: [false]
         include:
@@ -94,7 +94,7 @@ jobs:
               cibuildwheel --print-build-identifiers --platform linux \
                 | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-22.04"}/' \
               && cibuildwheel --print-build-identifiers --platform macos \
-                | sed 's/.*/{"cibw-only": "&", "os": "macos-14" }/' \
+                | sed 's/.*/{"cibw-only": "&", "os": "macos-15-intel" }/' \
               && CIBW_ARCHS_WINDOWS=AMD64 cibuildwheel --print-build-identifiers --platform windows \
                 | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "AMD64" }/' \
               && CIBW_ARCHS_WINDOWS=x86 cibuildwheel --print-build-identifiers --platform windows \
@@ -160,7 +160,7 @@ jobs:
 
   build_wheels_macosx_arm64:
     name: Build macOS arm64 wheels
-    runs-on: macos-14
+    runs-on: macos-15
 
     steps:
 
