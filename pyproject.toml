@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "cython==3.2.1",
-    "setuptools>=43",
+    "setuptools @ git+https://github.com/mwilliamson/setuptools@python314t-mingw32",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
