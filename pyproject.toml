@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "cython==3.2.1",
+    "cython==3.2.3",
     "setuptools>=43",
     "wheel",
 ]
