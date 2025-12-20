@@ -2,6 +2,9 @@ name: Build
 
 on: [push, pull_request, workflow_dispatch]
 
+env:
+  FULL_BUILD: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
+
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
@@ -118,7 +121,7 @@ jobs:
     - name: Check whether to build wheel
       id: should-build-wheel
       if: |
-        (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) ||
+        env.FULL_BUILD == 'true' ||
         matrix.cibw-only == 'cp310-manylinux_x86_64' ||
         matrix.cibw-only == 'cp314t-manylinux_x86_64' ||
         matrix.cibw-only == 'pp311-manylinux_x86_64' ||
@@ -179,14 +182,14 @@ jobs:
         CIBW_SKIP=cp38-macosx_arm64 python -m cibuildwheel --print-build-identifiers
 
     - name: Build wheels
-      if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
+      if: ${{ env.FULL_BUILD == 'true' }}
       uses: pypa/cibuildwheel@v3.3.0
       env:
         CIBW_ENABLE: "pypy"
         CIBW_SKIP: cp38-macosx_arm64
 
     - name: Build wheels
-      if: ${{ !(github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
+      if: ${{ env.FULL_BUILD != 'true' }}
       uses: pypa/cibuildwheel@v3.3.0
       with:
         only: cp310-macosx_arm64
