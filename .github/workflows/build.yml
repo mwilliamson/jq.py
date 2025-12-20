@@ -21,6 +21,8 @@ jobs:
       uses: pypa/cibuildwheel@v3.3.0
       with:
         only: cp314t-win32
+      env:
+        CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && matrix.arch == 'x86' && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
 
     - uses: actions/upload-artifact@v4
       if: steps.should-build-wheel.outputs.true

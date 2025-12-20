@@ -17,6 +17,8 @@ def _read(fname):
 class jq_with_deps_build_ext(build_ext):
     def finalize_options(self):
         build_ext.finalize_options(self)
+        if os.name == "nt":
+            self.compiler = "mingw32"
 
     def get_libraries(self, ext: Extension) -> list[str]:
         # When using non-MSVC compilers on Windows, the Python lib to link
