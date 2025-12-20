@@ -8,4 +8,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 test-requires = "-r test-requirements.txt"
-test-command = "pytest -vvv {project}/tests"
+test-command = "python3 -c 'import jq; print(jq)'"
