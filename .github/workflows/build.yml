@@ -84,16 +84,16 @@ jobs:
 
       - id: set-matrix
         env:
-          CIBW_ARCHS_LINUX: "auto aarch64"
-          CIBW_ARCHS_MACOS: "auto"
           CIBW_ENABLE: "pypy"
           CIBW_SKIP: "pp*-win_amd64 pp*-win32"
         run: |
           MATRIX=$(
             {
-              cibuildwheel --print-build-identifiers --platform linux \
+              CIBW_ARCHS_LINUX=auto cibuildwheel --print-build-identifiers --platform linux \
                 | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-22.04"}/' \
-              && cibuildwheel --print-build-identifiers --platform macos \
+              && CIBW_ARCHS_LINUX=aarch64 cibuildwheel --print-build-identifiers --platform linux \
+                | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-22.04-arm"}/' \
+              && CIBW_ARCHS_MACOS=auto cibuildwheel --print-build-identifiers --platform macos \
                 | sed 's/.*/{"cibw-only": "&", "os": "macos-15-intel" }/' \
               && CIBW_ARCHS_WINDOWS=AMD64 cibuildwheel --print-build-identifiers --platform windows \
                 | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "AMD64" }/' \
@@ -120,6 +120,7 @@ jobs:
       if: |
         (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) ||
         matrix.cibw-only == 'cp310-manylinux_x86_64' ||
+        matrix.cibw-only == 'cp310-manylinux_aarch64' ||
         matrix.cibw-only == 'cp314t-manylinux_x86_64' ||
         matrix.cibw-only == 'pp311-manylinux_x86_64' ||
         matrix.cibw-only == 'cp310-musllinux_x86_64' ||
