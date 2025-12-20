@@ -1,5 +1,5 @@
-print("AA")
+print("AA", flush=True)
 import jq
-print("BB")
+print("BB", flush=True)
 print(jq)
-print("CC")
+print("CC", flush=True)
