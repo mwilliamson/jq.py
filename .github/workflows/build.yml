@@ -3,154 +3,24 @@ name: Build
 on: [push, pull_request]
 
 jobs:
-  tests:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-22.04, macos-15-intel]
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13", "3.14", "3.14t", "pypy-3.11"]
-        use-system-libs: [false]
-        include:
-          - os: ubuntu-22.04
-            python-version: "3.11"
-            use-system-libs: true
-
-    steps:
-
-    - uses: actions/checkout@v4
-
-    - name: Use Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-
-    - run: pip install tox virtualenv
-
-    - run: tox -e py
-      if: ${{ !matrix.use-system-libs }}
-
-    - run: |
-        # Remove deps to make sure they're not being used
-        rm -r deps
-
-        sudo apt-get install -y libjq-dev libonig-dev
-
-        JQPY_USE_SYSTEM_LIBS=1 tox -e py
-      if: ${{ matrix.use-system-libs }}
-
-  build_sdist:
-    name: Build source distribution
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        name: Use Python 3.11
-        with:
-          python-version: '3.11'
-
-      - run: pip install build twine
-
-      - name: Build sdist
-        run: python -m build --sdist
-
-      - name: Check metadata
-        run: python -m twine check dist/*
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist-sdist
-          path: dist/*.tar.gz
-
-  build_wheels_matrix:
-    name: Generate matrix for building wheels
-    runs-on: ubuntu-latest
-
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-
-    steps:
-
-      - uses: actions/checkout@v4
-
-      - name: Use Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==3.3.0
-
-      - id: set-matrix
-        env:
-          CIBW_ARCHS_LINUX: "auto aarch64"
-          CIBW_ARCHS_MACOS: "auto"
-          CIBW_ENABLE: "pypy"
-          CIBW_SKIP: "pp*-win_amd64 pp*-win32"
-        run: |
-          MATRIX=$(
-            {
-              cibuildwheel --print-build-identifiers --platform linux \
-                | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-22.04"}/' \
-              && cibuildwheel --print-build-identifiers --platform macos \
-                | sed 's/.*/{"cibw-only": "&", "os": "macos-15-intel" }/' \
-              && CIBW_ARCHS_WINDOWS=AMD64 cibuildwheel --print-build-identifiers --platform windows \
-                | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "AMD64" }/' \
-              && CIBW_ARCHS_WINDOWS=x86 cibuildwheel --print-build-identifiers --platform windows \
-                | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "x86" }/'
-            } | jq --slurp --compact-output '{"include": .}'
-          )
-          echo matrix="$MATRIX" >> $GITHUB_OUTPUT
-
   build_wheels:
-    name: Build ${{ matrix.cibw-only }} wheel
+    name: Build cp314t-win32 wheel
 
-    needs: build_wheels_matrix
-
-    strategy:
-      matrix: ${{ fromJson(needs.build_wheels_matrix.outputs.matrix) }}
-
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-2022
 
     steps:
 
-    - name: Check whether to build wheel
-      id: should-build-wheel
-      if: |
-        (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) ||
-        matrix.cibw-only == 'cp310-manylinux_x86_64' ||
-        matrix.cibw-only == 'cp314t-manylinux_x86_64' ||
-        matrix.cibw-only == 'pp311-manylinux_x86_64' ||
-        matrix.cibw-only == 'cp310-musllinux_x86_64' ||
-        matrix.cibw-only == 'cp310-macosx_x86_64' ||
-        matrix.cibw-only == 'cp314t-macosx_x86_64' ||
-        matrix.cibw-only == 'cp310-win_amd64' ||
-        matrix.cibw-only == 'cp314t-win_amd64' ||
-        matrix.cibw-only == 'cp310-win32'
-      shell: bash
-      run: echo true=1 >> $GITHUB_OUTPUT
-
     - uses: actions/checkout@v4
-      if: steps.should-build-wheel.outputs.true
 
     - name: Set up MSYS2
-      if: steps.should-build-wheel.outputs.true && runner.os == 'Windows'
       uses: ./.github/actions/setup-msys2
       with:
-        arch: ${{ matrix.arch }}
-
-    - name: Set up QEMU
-      if: steps.should-build-wheel.outputs.true && runner.os == 'Linux'
-      uses: docker/setup-qemu-action@v3
-      with:
-        platforms: all
+        arch: x86
 
     - name: Build wheels
-      if: steps.should-build-wheel.outputs.true
       uses: pypa/cibuildwheel@v3.3.0
       with:
-        only: ${{ matrix.cibw-only }}
+        only: cp314t-win32
       env:
         CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && matrix.arch == 'x86' && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
 
@@ -159,48 +29,3 @@ jobs:
       with:
         name: dist-wheel-${{ matrix.cibw-only }}
         path: ./wheelhouse/*.whl
-
-  build_wheels_macosx_arm64:
-    name: Build macOS arm64 wheels
-    runs-on: macos-15
-
-    steps:
-
-    - uses: actions/checkout@v4
-
-    - name: Use Python 3.11
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Print build identifiers
-      run: |
-        python -m pip install cibuildwheel==3.3.0
-        CIBW_SKIP=cp38-macosx_arm64 python -m cibuildwheel --print-build-identifiers
-
-    - name: Build wheels
-      if: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
-      uses: pypa/cibuildwheel@v3.3.0
-      env:
-        CIBW_ENABLE: "pypy"
-        CIBW_SKIP: cp38-macosx_arm64
-
-    - name: Build wheels
-      if: ${{ !(github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
-      uses: pypa/cibuildwheel@v3.3.0
-      with:
-        only: cp310-macosx_arm64
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: dist-wheels-macos-arm64
-        path: ./wheelhouse/*.whl
-
-  merge_dist_artifacts:
-    runs-on: ubuntu-latest
-    needs: [build_sdist, build_wheels, build_wheels_macosx_arm64]
-    steps:
-    - uses: actions/upload-artifact/merge@v4
-      with:
-        name: dist
-        pattern: dist-*
