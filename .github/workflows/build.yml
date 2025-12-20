@@ -3,7 +3,7 @@ name: Build
 on: [push, pull_request, workflow_dispatch]
 
 env:
-  FULL_BUILD: ${{ (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
+  FULL_BUILD: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/')) }}
 
 jobs:
   tests:
