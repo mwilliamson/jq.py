@@ -141,12 +141,6 @@ jobs:
       with:
         arch: ${{ matrix.arch }}
 
-    - name: Set up QEMU
-      if: steps.should-build-wheel.outputs.true && runner.os == 'Linux'
-      uses: docker/setup-qemu-action@v3
-      with:
-        platforms: all
-
     - name: Build wheels
       if: steps.should-build-wheel.outputs.true
       uses: pypa/cibuildwheel@v3.3.0
