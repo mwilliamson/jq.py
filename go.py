@@ -1,5 +1,5 @@
 print("AA", flush=True)
-# import jq
+import jq
 print("BB", flush=True)
-# print(jq)
+print(jq)
 print("CC", flush=True)
