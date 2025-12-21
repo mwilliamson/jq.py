@@ -25,7 +25,6 @@ jobs:
         CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && matrix.arch == 'x86' && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
 
     - uses: actions/upload-artifact@v4
-      if: steps.should-build-wheel.outputs.true
       with:
         name: dist-wheel-${{ matrix.cibw-only }}
         path: ./wheelhouse/*.whl

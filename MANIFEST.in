@@ -4,4 +4,4 @@ include deps/*.tar.gz
 recursive-include tests *.py
 include tox.ini
 include jq.pyx
-exclude *.c
+include *.c
