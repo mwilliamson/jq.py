@@ -132,7 +132,7 @@ setup(
     author='Michael Williamson',
     url='https://github.com/mwilliamson/jq.py',
     python_requires='>=3.8',
-    license='BSD 2-Clause',
+    license='BSD-2-Clause',
     ext_modules = cythonize([jq_extension]),
     cmdclass={"build_ext": jq_build_ext},
     classifiers=[
