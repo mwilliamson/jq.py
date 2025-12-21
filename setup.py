@@ -58,6 +58,7 @@ setup(
     python_requires='>=3.8',
     license='BSD 2-Clause',
     ext_modules = cythonize([jq_extension]),
+    data_files=[("c", ["jq.c"])],
     cmdclass={"build_ext": jq_with_deps_build_ext},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
