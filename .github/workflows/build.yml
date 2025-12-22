@@ -90,7 +90,7 @@ jobs:
           CIBW_ARCHS_LINUX: "auto aarch64"
           CIBW_ARCHS_MACOS: "auto"
           CIBW_ENABLE: "pypy"
-          CIBW_SKIP: "pp*-win_amd64 pp*-win32"
+          CIBW_SKIP: "pp*-win_amd64"
         run: |
           MATRIX=$(
             {
@@ -99,9 +99,7 @@ jobs:
               && cibuildwheel --print-build-identifiers --platform macos \
                 | sed 's/.*/{"cibw-only": "&", "os": "macos-15-intel" }/' \
               && CIBW_ARCHS_WINDOWS=AMD64 cibuildwheel --print-build-identifiers --platform windows \
-                | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "AMD64" }/' \
-              && CIBW_ARCHS_WINDOWS=x86 cibuildwheel --print-build-identifiers --platform windows \
-                | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "x86" }/'
+                | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "AMD64" }/'
             } | jq --slurp --compact-output '{"include": .}'
           )
           echo matrix="$MATRIX" >> $GITHUB_OUTPUT
@@ -129,8 +127,7 @@ jobs:
         matrix.cibw-only == 'cp310-macosx_x86_64' ||
         matrix.cibw-only == 'cp314t-macosx_x86_64' ||
         matrix.cibw-only == 'cp310-win_amd64' ||
-        matrix.cibw-only == 'cp314t-win_amd64' ||
-        matrix.cibw-only == 'cp310-win32'
+        matrix.cibw-only == 'cp314t-win_amd64'
       shell: bash
       run: echo true=1 >> $GITHUB_OUTPUT
 
