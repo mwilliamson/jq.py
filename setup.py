@@ -135,6 +135,7 @@ setup(
     license='BSD-2-Clause',
     ext_modules = cythonize([jq_extension]),
     cmdclass={"build_ext": jq_build_ext},
+    package_data={"jq": ["py.typed"]},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -151,4 +152,3 @@ setup(
         'Programming Language :: Python :: Implementation :: CPython',
     ],
 )
-
