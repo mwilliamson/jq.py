@@ -457,3 +457,26 @@ class TestConvenienceFunctions(object):
         assert_equal(3, next(iterator))
         assert_equal(4, next(iterator))
         assert_equal("end", next(iterator, "end"))
+
+    def test_all_function_with_args_should_set_predefined_variables(self):
+        output = jq.all(".[] | . + $a + $b", [1, 2, 3], args={"a": 100, "b": 20})
+
+        assert_equal([121, 122, 123], output)
+
+    def test_first_function_with_args_should_set_predefined_variables(self):
+        output = jq.first('.m = "a\\($x)c"', {"n": 1}, args=dict(x="b", m="z"))
+
+        assert_equal({"m": "abc", "n": 1}, output)
+
+    def test_iter_function_with_args_should_set_predefined_variables(self):
+        iterator = jq.iter(". * $add | .[]", {"a": 1, "b": 2}, args={"add": {"b": 3, "c": 4}})
+
+        assert_equal(1, next(iterator))
+        assert_equal(3, next(iterator))
+        assert_equal(4, next(iterator))
+        assert_equal("end", next(iterator, "end"))
+
+    def test_text_function_with_args_should_set_predefined_variables(self):
+        output = jq.text(". + $x", "foo", args=dict(x="bar"))
+
+        assert_equal('"foobar"', output)
