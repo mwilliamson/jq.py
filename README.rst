@@ -48,10 +48,10 @@ If on Red Hat, Fedora, CentOS, or relatives, running the following command shoul
     yum groupinstall "Development Tools"
     yum install autoconf automake libtool python python-devel
 
-Mac OS X
+macOS
 ~~~~~~~~
 
-If on Mac OS X, you probably want to install
+If on macOS, you probably want to install
 `Xcode <https://developer.apple.com/xcode/>`_ and `Homebrew <http://brew.sh/>`_.
 Once Homebrew is installed, you can install the remaining dependencies with:
 
