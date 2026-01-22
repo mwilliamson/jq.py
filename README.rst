@@ -59,6 +59,17 @@ Once Homebrew is installed, you can install the remaining dependencies with:
 
     brew install autoconf automake libtool
 
+Cygwin
+~~~~~~
+
+If on Cygwin, you probably want to install
+`apt-cyg <https://github.com/transcode-open/apt-cyg>`_.
+Once apt-cyg is installed, you can install the remaining dependencies with:
+
+.. code-block:: sh
+
+    apt-cyg install autoconf automake libtool make python3-devel gcc-core gcc-c++
+
 Usage
 -----
 
