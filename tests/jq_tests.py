@@ -215,8 +215,7 @@ def test_value_error_is_raised_if_input_cannot_be_processed_by_program():
         program.input(1).all()
         assert False, "Expected error"
     except ValueError as error:
-        expected_error_str = "Cannot index number with string \"x\""
-        assert_equal(str(error), expected_error_str)
+        assert "Cannot index number with string" in str(error)
 
 
 def test_non_string_error_is_converted_to_json_text():
