@@ -215,8 +215,13 @@ def test_value_error_is_raised_if_input_cannot_be_processed_by_program():
         program.input(1).all()
         assert False, "Expected error"
     except ValueError as error:
-        expected_error_str = "Cannot index number with string \"x\""
-        assert_equal(str(error), expected_error_str)
+        expected_error_strs = [
+            # jq 1.8.1 and earlier
+            "Cannot index number with string \"x\"",
+            # jq 1.8.2 and later
+            "Cannot index number with string (\"x\")",
+        ]
+        str(error) in expected_error_strs
 
 
 def test_non_string_error_is_converted_to_json_text():
