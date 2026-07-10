@@ -475,6 +475,10 @@ def jq(object program):
 
 
 cdef unicode jv_string_to_py_string(jv value):
+    """Convert a jv string into a Python string.
+
+    Does not consume its input."""
+
     cdef int length = jv_string_length_bytes(jv_copy(value))
     cdef char* string_value = jv_string_value(value)
     return string_value[:length].decode("utf-8")
