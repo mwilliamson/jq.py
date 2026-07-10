@@ -7,7 +7,7 @@ This project contains Python bindings for
 Installation
 ------------
 
-Wheels are built for various Python versions and architectures on Linux and Mac OS X.
+Wheels are built for various Python versions and architectures on Linux, Mac OS X and Windows.
 On these platforms, you should be able to install jq with a normal pip install:
 
 .. code-block:: sh
