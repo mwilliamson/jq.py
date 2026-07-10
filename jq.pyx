@@ -106,8 +106,10 @@ cdef extern from "jq.h":
     void jq_get_error_cb(jq_state *, jq_err_cb *, void **)
 
 
-cdef object _jv_to_python(jv value):
+cdef object _jv_to_python(jv value) noexcept:
     """Unpack a jv value into a Python value.
+
+    Invalid values are treated as nulls.
 
     Consumes the input value."""
 
@@ -119,14 +121,17 @@ cdef object _jv_to_python(jv value):
     cdef double number_value
 
     if kind == JV_KIND_INVALID:
-        jv_free(value)
-        raise ValueError("Invalid value")
+        python_value = None
+
     elif kind == JV_KIND_NULL:
         python_value = None
+
     elif kind == JV_KIND_FALSE:
         python_value = False
+
     elif kind == JV_KIND_TRUE:
         python_value = True
+
     elif kind == JV_KIND_NUMBER:
         number_value = jv_number_value(value)
         if number_value == INFINITY:
@@ -139,14 +144,17 @@ cdef object _jv_to_python(jv value):
             python_value = int(number_value)
         else:
             python_value = number_value
+
     elif kind == JV_KIND_STRING:
         python_value = jv_string_to_py_string(value)
+
     elif kind == JV_KIND_ARRAY:
         python_value = []
         length = jv_array_length(jv_copy(value))
         for idx in range(0, length):
             property_value = jv_array_get(jv_copy(value), idx)
             python_value.append(_jv_to_python(property_value))
+
     elif kind == JV_KIND_OBJECT:
         python_value = {}
         idx = jv_object_iter(value)
@@ -159,10 +167,12 @@ cdef object _jv_to_python(jv value):
             python_value[python_property_key] = _jv_to_python(property_value)
 
             idx = jv_object_iter_next(value, idx)
+
     else:
-        jv_free(value)
-        raise ValueError("Invalid value kind: " + str(kind))
+        python_value = None
+
     jv_free(value)
+
     return python_value
 
 
