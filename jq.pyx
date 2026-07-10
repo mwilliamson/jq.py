@@ -152,12 +152,12 @@ cdef object _jv_to_python(jv value):
         idx = jv_object_iter(value)
         while jv_object_iter_valid(value, idx):
             property_key = jv_object_iter_key(value, idx)
+            python_property_key = jv_string_to_py_string(property_key)
+            jv_free(property_key)
+
             property_value = jv_object_iter_value(value, idx)
-            try:
-                python_value[jv_string_to_py_string(property_key)] = \
-                    _jv_to_python(property_value)
-            finally:
-                jv_free(property_key)
+            python_value[python_property_key] = _jv_to_python(property_value)
+
             idx = jv_object_iter_next(value, idx)
     else:
         jv_free(value)
