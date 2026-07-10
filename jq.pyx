@@ -22,25 +22,62 @@ cdef extern from "jv.h":
     ctypedef struct jv:
         pass
 
-    jv_kind jv_get_kind(jv)
-    int jv_is_valid(jv)
-    jv jv_copy(jv)
+    # value: not consumed
+    jv_kind jv_get_kind(jv value)
+
+    # value: not consumed
+    int jv_is_valid(jv value)
+
+    # value: not consumed
+    jv jv_copy(jv value)
+
+    # value: consumed
     void jv_free(jv)
-    jv jv_invalid_get_msg(jv)
-    int jv_invalid_has_msg(jv)
-    const char* jv_string_value(jv)
-    int jv_string_length_bytes(jv)
+
+    # value: consumed
+    jv jv_invalid_get_msg(jv value)
+
+    # value: consumed
+    int jv_invalid_has_msg(jv value)
+
+    # value: not consumed
+    const char* jv_string_value(jv value)
+
+    # value: consumed
+    int jv_string_length_bytes(jv value)
+
+    # value: not consumed
     int jv_is_integer(jv)
+
+    # value: not consumed
     double jv_number_value(jv)
+
     jv jv_array()
-    jv jv_array_append(jv, jv)
-    int jv_array_length(jv)
-    jv jv_array_get(jv, int)
-    int jv_object_iter(jv)
-    int jv_object_iter_next(jv, int)
-    int jv_object_iter_valid(jv, int)
-    jv jv_object_iter_key(jv, int)
-    jv jv_object_iter_value(jv, int)
+
+    # array: consumed
+    # element: consumed
+    jv jv_array_append(jv array, jv element)
+
+    # array: consumed
+    int jv_array_length(jv array)
+
+    # array: consumed
+    jv jv_array_get(jv array, int index)
+
+    # value: not consumed
+    int jv_object_iter(jv value)
+
+    # value: not consumed
+    int jv_object_iter_next(jv value, int)
+
+    # value: not consumed
+    int jv_object_iter_valid(jv value, int)
+
+    # value: not consumed
+    jv jv_object_iter_key(jv value, int)
+
+    # value: not consumed
+    jv jv_object_iter_value(jv value, int)
 
     cdef struct jv_parser:
         pass
