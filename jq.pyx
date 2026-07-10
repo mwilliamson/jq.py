@@ -105,7 +105,8 @@ cdef object _jv_to_python(jv value):
         python_value = jv_string_to_py_string(value)
     elif kind == JV_KIND_ARRAY:
         python_value = []
-        for idx in range(0, jv_array_length(jv_copy(value))):
+        length = jv_array_length(jv_copy(value))
+        for idx in range(0, length):
             property_value = jv_array_get(jv_copy(value), idx)
             python_value.append(_jv_to_python(property_value))
     elif kind == JV_KIND_OBJECT:
