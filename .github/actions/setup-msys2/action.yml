@@ -7,7 +7,7 @@ runs:
   steps:
   - name: Set up MSYS2
     id: set-up-msys2
-    uses: msys2/setup-msys2@v2
+    uses: msys2/setup-msys2@v2.27.0
     with:
       msystem: ${{ inputs.arch == 'x86' && 'mingw32' || 'ucrt64' }}
       install: make mingw-w64-${{ inputs.arch == 'x86' && 'i686' || 'ucrt-x86_64' }}-gcc patch
