@@ -119,6 +119,7 @@ cdef object _jv_to_python(jv value):
     cdef double number_value
 
     if kind == JV_KIND_INVALID:
+        jv_free(value)
         raise ValueError("Invalid value")
     elif kind == JV_KIND_NULL:
         python_value = None
