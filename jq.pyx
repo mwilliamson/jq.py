@@ -70,7 +70,10 @@ cdef extern from "jq.h":
 
 
 cdef object _jv_to_python(jv value):
-    """Unpack a jv value into a Python value"""
+    """Unpack a jv value into a Python value.
+
+    Consumes the input value."""
+
     cdef jv_kind kind = jv_get_kind(value)
     cdef int idx
     cdef jv property_key
