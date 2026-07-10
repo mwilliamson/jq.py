@@ -29,7 +29,6 @@ cdef extern from "jv.h":
     jv jv_invalid_get_msg(jv)
     int jv_invalid_has_msg(jv)
     const char* jv_string_value(jv)
-    jv jv_dump_string(jv, int flags)
     int jv_string_length_bytes(jv)
     int jv_is_integer(jv)
     double jv_number_value(jv)
