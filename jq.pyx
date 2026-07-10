@@ -160,6 +160,7 @@ cdef object _jv_to_python(jv value):
                 jv_free(property_key)
             idx = jv_object_iter_next(value, idx)
     else:
+        jv_free(value)
         raise ValueError("Invalid value kind: " + str(kind))
     jv_free(value)
     return python_value
