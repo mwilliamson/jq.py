@@ -409,23 +409,23 @@ cdef class _ResultIterator(object):
             raise StopIteration()
 
 
-def all(program, value=_NO_VALUE, text=_NO_VALUE):
-    return compile(program).input(value, text=text).all()
+def all(program, value=_NO_VALUE, text=_NO_VALUE, args=None):
+    return compile(program, args=args).input(value, text=text).all()
 
 
-def first(program, value=_NO_VALUE, text=_NO_VALUE):
-    return compile(program).input(value, text=text).first()
+def first(program, value=_NO_VALUE, text=_NO_VALUE, args=None):
+    return compile(program, args=args).input(value, text=text).first()
 
 
 _iter = iter
 
 
-def iter(program, value=_NO_VALUE, text=_NO_VALUE):
-    return _iter(compile(program).input(value, text=text))
+def iter(program, value=_NO_VALUE, text=_NO_VALUE, args=None):
+    return _iter(compile(program, args=args).input(value, text=text))
 
 
-def text(program, value=_NO_VALUE, text=_NO_VALUE):
-    return compile(program).input(value, text=text).text()
+def text(program, value=_NO_VALUE, text=_NO_VALUE, args=None):
+    return compile(program, args=args).input(value, text=text).text()
 
 
 # Support the 0.1.x API for backwards compatibility
