@@ -21,10 +21,10 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Use Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -46,9 +46,9 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         name: Use Python 3.11
         with:
           python-version: '3.11'
@@ -61,7 +61,7 @@ jobs:
       - name: Check metadata
         run: python -m twine check dist/*
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist-sdist
           path: dist/*.tar.gz
@@ -75,10 +75,10 @@ jobs:
 
     steps:
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Use Python 3.11
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -131,7 +131,7 @@ jobs:
       shell: bash
       run: echo true=1 >> $GITHUB_OUTPUT
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       if: steps.should-build-wheel.outputs.true
 
     - name: Set up MSYS2
@@ -142,7 +142,7 @@ jobs:
 
     - name: Set up QEMU
       if: steps.should-build-wheel.outputs.true && runner.os == 'Linux'
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
       with:
         platforms: all
 
@@ -154,7 +154,7 @@ jobs:
       env:
         CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && matrix.arch == 'x86' && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       if: steps.should-build-wheel.outputs.true
       with:
         name: dist-wheel-${{ matrix.cibw-only }}
@@ -166,10 +166,10 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Use Python 3.11
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.11'
 
@@ -191,7 +191,7 @@ jobs:
       with:
         only: cp310-macosx_arm64
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: dist-wheels-macos-arm64
         path: ./wheelhouse/*.whl
@@ -200,7 +200,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build_sdist, build_wheels, build_wheels_macosx_arm64]
     steps:
-    - uses: actions/upload-artifact/merge@v4
+    - uses: actions/upload-artifact/merge@v7
       with:
         name: dist
         pattern: dist-*
