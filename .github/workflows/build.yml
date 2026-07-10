@@ -6,8 +6,6 @@ jobs:
   build_wheels:
     name: Build cp310-win_amd64 wheel
 
-    needs: build_wheels_matrix
-
     runs-on: windows-2022
 
     steps:
