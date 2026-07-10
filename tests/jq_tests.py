@@ -129,6 +129,17 @@ def test_can_slurp_and_produce_multiple_output_values():
     assert_equal([1, 2, 3], result)
 
 
+def test_slurping_invalid_input_text_raises_error():
+    program = jq.compile(".")
+
+    try:
+        program.input_text("!!", slurp=True).all()
+        assert False, "Expected error"
+    except ValueError as error:
+        expected_error_str = "parse error: Invalid numeric literal at EOF at line 1, column 2"
+        assert_equal(str(error), expected_error_str)
+
+
 def test_when_text_method_is_used_on_result_then_output_is_serialised_to_json_string():
     assert_equal(
         '"42"',

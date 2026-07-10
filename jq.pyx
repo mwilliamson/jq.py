@@ -433,6 +433,9 @@ cdef class _ResultIterator(object):
                 except StopIteration:
                     self._slurp = False
                     break
+                except:
+                    jv_free(value)
+                    raise
         else:
             value = self._parse_next_input()
 
