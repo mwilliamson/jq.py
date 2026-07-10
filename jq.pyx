@@ -28,7 +28,7 @@ cdef extern from "jv.h":
     void jv_free(jv)
     jv jv_invalid_get_msg(jv)
     int jv_invalid_has_msg(jv)
-    char* jv_string_value(jv)
+    const char* jv_string_value(jv)
     jv jv_dump_string(jv, int flags)
     int jv_string_length_bytes(jv)
     int jv_is_integer(jv)
@@ -435,5 +435,5 @@ def jq(object program):
 
 cdef unicode jv_string_to_py_string(jv value):
     cdef int length = jv_string_length_bytes(jv_copy(value))
-    cdef char* string_value = jv_string_value(value)
+    cdef const char* string_value = jv_string_value(value)
     return string_value[:length].decode("utf-8")
