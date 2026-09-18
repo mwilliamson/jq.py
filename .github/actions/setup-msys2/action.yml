@@ -1,7 +1,19 @@
 name: 'Setup msys2'
+description: 'Install an MSYS2 toolchain targeting the given architecture.'
 inputs:
   arch:
+    description: 'Target architecture: x86, AMD64 or ARM64.'
     required: true
+  toolchains:
+    description: 'Lookup table mapping the target architecture to an MSYS2 environment and pacboy compiler packages.'
+    required: false
+    # gcc-compat provides the gcc/g++ aliases that setuptools' mingw32 compiler expects.
+    default: >-
+      {
+        "x86":   {"msystem": "mingw32",    "packages": ["gcc:p"]},
+        "AMD64": {"msystem": "ucrt64",     "packages": ["gcc:p"]},
+        "ARM64": {"msystem": "clangarm64", "packages": ["gcc-compat:p"]}
+      }
 runs:
   using: "composite"
   steps:
@@ -9,8 +21,9 @@ runs:
     id: set-up-msys2
     uses: msys2/setup-msys2@v2
     with:
-      msystem: ${{ inputs.arch == 'x86' && 'mingw32' || 'ucrt64' }}
-      install: make mingw-w64-${{ inputs.arch == 'x86' && 'i686' || 'ucrt-x86_64' }}-gcc patch
+      msystem: ${{ fromJSON(inputs.toolchains)[inputs.arch].msystem }}
+      install: make patch
+      pacboy: ${{ join(fromJSON(inputs.toolchains)[inputs.arch].packages, ' ') }}
 
   - name: Add MSYS2 toolchain to PATH
     shell: msys2 {0}
