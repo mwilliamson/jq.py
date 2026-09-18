@@ -2,15 +2,17 @@ name: 'Setup msys2'
 description: 'Install an MSYS2 toolchain targeting the given architecture.'
 inputs:
   arch:
-    description: 'Target architecture: x86 or AMD64'
+    description: 'Target architecture: x86, AMD64 or ARM64.'
     required: true
   toolchains:
     description: 'Lookup table mapping the target architecture to an MSYS2 environment and pacboy compiler packages.'
     required: false
+    # gcc-compat provides the gcc/g++ aliases that setuptools' mingw32 compiler expects.
     default: >-
       {
         "x86":   {"msystem": "mingw32",    "packages": ["gcc:p"]},
         "AMD64": {"msystem": "ucrt64",     "packages": ["gcc:p"]},
+        "ARM64": {"msystem": "clangarm64", "packages": ["gcc-compat:p"]}
       }
 runs:
   using: "composite"
