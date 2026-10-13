@@ -195,6 +195,7 @@ Convenience functions are available to get the output for a program and input in
 
     assert jq.first(".[] + 1", [1, 2, 3]) == 2
     assert jq.first(".[] + 1", text="[1, 2, 3]") == 2
+    assert jq.first(".[] + $addend", [1, 2, 3], args={"addend": 1}) == 2
     assert jq.text(".[] + 1", [1, 2, 3]) == "2\n3\n4"
     assert jq.all(".[] + 1", [1, 2, 3]) == [2, 3, 4]
     assert list(jq.iter(".[] + 1", [1, 2, 3])) == [2, 3, 4]
