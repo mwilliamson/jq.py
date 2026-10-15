@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-15-intel]
-        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13", "3.14", "3.14t", "pypy-3.11"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.13", "3.14", "3.14t", "3.15", "3.15t", "pypy-3.11"]
         use-system-libs: [false]
         include:
           - os: ubuntu-22.04
@@ -82,9 +82,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==3.3.0
-
+      # cibuildwheel 3.x builds everything up to 3.14 (incl. 3.8); 4.x is needed for 3.15 but dropped 3.8
       - id: set-matrix
         env:
           CIBW_ARCHS_LINUX: "auto aarch64"
@@ -92,14 +90,18 @@ jobs:
           CIBW_ENABLE: "pypy"
           CIBW_SKIP: "pp*-win_amd64"
         run: |
+          ids() {
+            # $1 = cibuildwheel version, $2 = platform, $3 = grep filter
+            pipx run --spec "cibuildwheel==$1" cibuildwheel --print-build-identifiers --platform "$2" | grep -E "$3" || true
+          }
           MATRIX=$(
             {
-              cibuildwheel --print-build-identifiers --platform linux \
-                | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-22.04"}/' \
-              && cibuildwheel --print-build-identifiers --platform macos \
-                | sed 's/.*/{"cibw-only": "&", "os": "macos-15-intel" }/' \
-              && CIBW_ARCHS_WINDOWS=AMD64 cibuildwheel --print-build-identifiers --platform windows \
-                | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "AMD64" }/'
+              ids 3.3.0 linux . | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-22.04", "cibw-version": "3.3.0"}/'
+              ids 4.3.1 linux '^cp315' | sed 's/.*/{"cibw-only": "&", "os": "ubuntu-22.04", "cibw-version": "4.3.1"}/'
+              ids 3.3.0 macos . | sed 's/.*/{"cibw-only": "&", "os": "macos-15-intel", "cibw-version": "3.3.0"}/'
+              ids 4.3.1 macos '^cp315' | sed 's/.*/{"cibw-only": "&", "os": "macos-15-intel", "cibw-version": "4.3.1"}/'
+              CIBW_ARCHS_WINDOWS=AMD64 ids 3.3.0 windows . | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "AMD64", "cibw-version": "3.3.0"}/'
+              CIBW_ARCHS_WINDOWS=AMD64 ids 4.3.1 windows '^cp315' | sed 's/.*/{"cibw-only": "&", "os": "windows-2022", "arch": "AMD64", "cibw-version": "4.3.1"}/'
             } | jq --slurp --compact-output '{"include": .}'
           )
           echo matrix="$MATRIX" >> $GITHUB_OUTPUT
@@ -122,6 +124,7 @@ jobs:
         env.FULL_BUILD == 'true' ||
         matrix.cibw-only == 'cp310-manylinux_x86_64' ||
         matrix.cibw-only == 'cp314t-manylinux_x86_64' ||
+        matrix.cibw-only == 'cp315t-manylinux_x86_64' ||
         matrix.cibw-only == 'pp311-manylinux_x86_64' ||
         matrix.cibw-only == 'cp310-musllinux_x86_64' ||
         matrix.cibw-only == 'cp310-macosx_x86_64' ||
@@ -148,9 +151,8 @@ jobs:
 
     - name: Build wheels
       if: steps.should-build-wheel.outputs.true
-      uses: pypa/cibuildwheel@v3.3.0
-      with:
-        only: ${{ matrix.cibw-only }}
+      shell: bash
+      run: pipx run --spec "cibuildwheel==${{ matrix.cibw-version }}" cibuildwheel --only "${{ matrix.cibw-only }}"
       env:
         CIBW_ENVIRONMENT: ${{ runner.os == 'Windows' && matrix.arch == 'x86' && 'CC=i686-w64-mingw32-gcc.exe' || '' }}
 
@@ -184,6 +186,12 @@ jobs:
       env:
         CIBW_ENABLE: "pypy"
         CIBW_SKIP: cp38-macosx_arm64
+
+    # cibuildwheel 4.x needed for 3.15
+    - name: Build wheels (3.15)
+      run: pipx run --spec cibuildwheel==4.3.1 cibuildwheel
+      env:
+        CIBW_BUILD: ${{ env.FULL_BUILD == 'true' && 'cp315-macosx_arm64 cp315t-macosx_arm64' || 'cp315t-macosx_arm64' }}
 
     - name: Build wheels
       if: ${{ env.FULL_BUILD != 'true' }}
