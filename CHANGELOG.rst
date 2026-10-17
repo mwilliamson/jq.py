@@ -8,6 +8,8 @@ Changelog
 
 * Drop support for Python 3.8.
 
+* Build Windows ARM64 wheels.
+
 1.12.0
 ------
 
