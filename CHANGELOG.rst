@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.13.0
+------
+
+* Drop support for Python 3.8.
+
 1.12.0
 ------
 
