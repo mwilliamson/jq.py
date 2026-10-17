@@ -83,7 +83,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==3.3.0
+        run: python -m pip install cibuildwheel==4.3.1
 
       - id: set-matrix
         env:
@@ -148,7 +148,7 @@ jobs:
 
     - name: Build wheels
       if: steps.should-build-wheel.outputs.true
-      uses: pypa/cibuildwheel@v3.3.0
+      uses: pypa/cibuildwheel@v4.3.1
       with:
         only: ${{ matrix.cibw-only }}
       env:
@@ -175,19 +175,19 @@ jobs:
 
     - name: Print build identifiers
       run: |
-        python -m pip install cibuildwheel==3.3.0
+        python -m pip install cibuildwheel==4.3.1
         CIBW_SKIP=cp38-macosx_arm64 python -m cibuildwheel --print-build-identifiers
 
     - name: Build wheels
       if: ${{ env.FULL_BUILD == 'true' }}
-      uses: pypa/cibuildwheel@v3.3.0
+      uses: pypa/cibuildwheel@v4.3.1
       env:
         CIBW_ENABLE: "pypy"
         CIBW_SKIP: cp38-macosx_arm64
 
     - name: Build wheels
       if: ${{ env.FULL_BUILD != 'true' }}
-      uses: pypa/cibuildwheel@v3.3.0
+      uses: pypa/cibuildwheel@v4.3.1
       with:
         only: cp310-macosx_arm64
 
