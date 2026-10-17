@@ -90,10 +90,11 @@ jobs:
           CIBW_ARCHS_LINUX: "auto aarch64"
           CIBW_ARCHS_MACOS: "auto"
           CIBW_ENABLE: "pypy"
-          # Free-threaded win_arm64 is skipped because CPython's _Py_ThreadId()
-          # tries calling __getReg() that CLANGARM64 clang does not provide.
+          # Free-threaded win_arm64 for Python < 3.15 is skipped because
+          # CPython's _Py_ThreadId() tries calling __getReg() that CLANGARM64
+          # clang does not provide.
           # https://github.com/python/cpython/issues/157212
-          CIBW_SKIP: "pp*-win_amd64 cp3??t-win_arm64"
+          CIBW_SKIP: "pp*-win_amd64 cp314t-win_arm64"
         run: |
           MATRIX=$(
             {
@@ -133,7 +134,8 @@ jobs:
         matrix.cibw-only == 'cp314t-macosx_x86_64' ||
         matrix.cibw-only == 'cp310-win_amd64' ||
         matrix.cibw-only == 'cp314t-win_amd64' ||
-        matrix.cibw-only == 'cp311-win_arm64'
+        matrix.cibw-only == 'cp311-win_arm64' ||
+        matrix.cibw-only == 'cp315t-win_arm64'
       shell: bash
       run: echo true=1 >> $GITHUB_OUTPUT
 
