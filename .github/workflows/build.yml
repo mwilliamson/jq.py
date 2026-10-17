@@ -90,13 +90,10 @@ jobs:
           CIBW_ARCHS_LINUX: "auto aarch64"
           CIBW_ARCHS_MACOS: "auto"
           CIBW_ENABLE: "pypy"
-          # win_arm64 is restricted to CPython 3.11+, the earliest version with
-          # ARM64 builds available to actions/setup-python for testing.
-          #
           # Free-threaded win_arm64 is skipped because CPython's _Py_ThreadId()
           # tries calling __getReg() that CLANGARM64 clang does not provide.
           # https://github.com/python/cpython/issues/157212
-          CIBW_SKIP: "pp*-win_amd64 cp39-win_arm64 cp310-win_arm64 cp3??t-win_arm64"
+          CIBW_SKIP: "pp*-win_amd64 cp3??t-win_arm64"
         run: |
           MATRIX=$(
             {
