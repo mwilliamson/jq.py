@@ -4,6 +4,8 @@ Changelog
 1.13.0
 ------
 
+* Add support for Python 3.15.
+
 * Drop support for Python 3.8.
 
 1.12.0
