@@ -3,5 +3,6 @@ include LICENSE
 include deps/*.tar.gz
 recursive-include tests *.py
 include tox.ini
+include test-requirements.txt
 include jq.pyx
 exclude *.c
